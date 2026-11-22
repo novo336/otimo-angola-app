@@ -12,30 +12,25 @@ import android.graphics.Typeface;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.*;
-import android.text.InputType;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
+
 import java.text.NumberFormat;
 import java.util.Locale;
 
 public class MainActivity extends Activity {
 
     private LinearLayout box;
-    private EditText origem, destino, km, clienteTel, detalhes;
-    private EditText nome, motoristaTel, matricula, municipio, extra;
-    private Spinner servico, viatura, provincia;
-    private TextView precoView;
-
     private SharedPreferences storage;
-    private JSONArray pedidos, motoristas;
 
-    private final int verde = Color.rgb(20, 110, 60);
-    private final int base = 35000;
-    private final int porKm = 1050;
+    private JSONArray pedidos;
+    private JSONArray motoristas;
 
-    // PIN ADMINISTRATIVO PROVISÓRIO: 2026
-    // Número WhatsApp provisório
-    private final String whatsapp = "244900000000";
+    private final int BASE = 35000;
+    private final int POR_KM = 1050;
+
+    private final String WHATSAPP = "244900000000";
     private final String PIN_ADMIN = "2026";
 
     @Override
@@ -43,261 +38,295 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         storage = getSharedPreferences("OTIMO_DATA", MODE_PRIVATE);
-        pedidos = carregar("pedidos");
-        motoristas = carregar("motoristas");
+
+        try {
+            pedidos = new JSONArray(storage.getString("pedidos", "[]"));
+            motoristas = new JSONArray(storage.getString("motoristas", "[]"));
+        } catch (Exception e) {
+            pedidos = new JSONArray();
+            motoristas = new JSONArray();
+        }
 
         inicio();
     }
 
-    private JSONArray carregar(String chave) {
-        try {
-            return new JSONArray(storage.getString(chave, "[]"));
-        } catch (Exception e) {
-            return new JSONArray();
-        }
+    private void inicio() {
+        base("ÓTIMO ANGOLA", "Mudanças • Entregas • Transporte");
+
+        botao("Solicitar transporte", this::cliente);
+        botao("Cadastrar motorista", this::cadastroMotorista);
+        botao("Painel administrativo", this::loginAdmin);
+
+        texto("Transportes a partir de 35.000 Kz");
+        texto("Mudanças, mercadorias e entregas.");
     }
 
-    private void guardar() {
-        storage.edit()
-                .putString("pedidos", pedidos.toString())
-                .putString("motoristas", motoristas.toString())
-                .apply();
-    }
-
-    private void layoutBase() {
-        ScrollView scroll = new ScrollView(this);
+    private void base(String titulo, String subtitulo) {
         box = new LinearLayout(this);
         box.setOrientation(LinearLayout.VERTICAL);
-        box.setPadding(32, 30, 32, 30);
-        box.setBackgroundColor(Color.rgb(245, 248, 245));
+        box.setPadding(35, 35, 35, 35);
+        box.setBackgroundColor(Color.WHITE);
+
+        ScrollView scroll = new ScrollView(this);
         scroll.addView(box);
+
         setContentView(scroll);
+
+        TextView t = new TextView(this);
+        t.setText(titulo);
+        t.setTextSize(28);
+        t.setTypeface(null, Typeface.BOLD);
+        t.setTextColor(Color.rgb(20, 90, 40));
+        t.setGravity(Gravity.CENTER);
+        box.addView(t);
+
+        TextView s = new TextView(this);
+        s.setText(subtitulo);
+        s.setTextSize(16);
+        s.setGravity(Gravity.CENTER);
+        s.setPadding(0, 10, 0, 30);
+        box.addView(s);
     }
 
-    private void cabecalho(String sub) {
-        TextView logo = texto("ÓTIMO ANGOLA", 29, verde, true);
-        logo.setGravity(Gravity.CENTER);
-        box.addView(logo);
-
-        TextView subtitle = texto(sub, 14, Color.DKGRAY, false);
-        subtitle.setGravity(Gravity.CENTER);
-        subtitle.setPadding(0, 0, 0, 25);
-        box.addView(subtitle);
+    private void texto(String value) {
+        TextView t = new TextView(this);
+        t.setText(value);
+        t.setTextSize(16);
+        t.setTextColor(Color.DKGRAY);
+        t.setPadding(0, 12, 0, 12);
+        box.addView(t);
     }
 
-    private void inicio() {
-        layoutBase();
-        cabecalho("MUDANÇAS • TRANSPORTES • ENTREGAS");
-
-        box.addView(texto("Bem-vindo!", 24, Color.BLACK, true));
-
-        Button c = botao("SOLICITAR TRANSPORTE");
-        box.addView(c);
-        c.setOnClickListener(v -> telaCliente());
-
-        Button m = botao("CADASTRAR COMO MOTORISTA");
-        box.addView(m);
-        m.setOnClickListener(v -> telaMotorista());
-
-        Button a = botao("ADMINISTRAÇÃO");
-        box.addView(a);
-        a.setOnClickListener(v -> loginAdmin());
-
-        box.addView(texto(
-                "ÓTIMO ANGOLA — A sua mudança, o nosso compromisso.",
-                15, verde, false));
+    private EditText campo(String hint) {
+        EditText e = new EditText(this);
+        e.setHint(hint);
+        e.setTextSize(16);
+        box.addView(e);
+        return e;
     }
 
-    private void telaCliente() {
-        layoutBase();
-        cabecalho("NOVO PEDIDO DE TRANSPORTE");
+    private void botao(String label, Runnable acao) {
+        Button b = new Button(this);
+        b.setText(label);
+        b.setTextSize(16);
+        b.setAllCaps(false);
+        b.setBackgroundColor(Color.rgb(20, 110, 50));
+        b.setTextColor(Color.WHITE);
 
-        box.addView(botaoVoltar());
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                -1, -2
+        );
+        lp.setMargins(0, 10, 0, 10);
+        b.setLayoutParams(lp);
 
-        servico = spinner("Serviço", new String[]{
-                "Mudança residencial", "Transporte de mercadorias", "Entrega"
+        b.setOnClickListener(v -> acao.run());
+        box.addView(b);
+    }
+
+    private void voltar() {
+        botao("Voltar ao início", this::inicio);
+    }
+
+    private String dinheiro(int valor) {
+        return NumberFormat.getInstance(new Locale("pt", "AO"))
+                .format(valor) + " Kz";
+    }
+
+    private int calcular(int km) {
+        return BASE + (km * POR_KM);
+    }
+
+    // ================= CLIENTE =================
+
+    private void cliente() {
+        base("Solicitar transporte", "Preencha os dados da sua viagem.");
+
+        EditText origem = campo("Local de recolha");
+        EditText destino = campo("Local de entrega");
+
+        Spinner servico = spinner(new String[]{
+                "Mudança residencial",
+                "Transporte de mercadorias",
+                "Entrega"
         });
 
-        origem = campo("Origem / local de recolha");
-        destino = campo("Destino / local de entrega");
-
-        viatura = spinner("Viatura", new String[]{
-                "Carrinha pequena", "Carrinha grande",
-                "Camião", "Não sei qual preciso"
+        Spinner veiculo = spinner(new String[]{
+                "Carrinha pequena",
+                "Carrinha grande",
+                "Caminhão",
+                "Outro"
         });
 
-        km = campo("Distância aproximada (km)");
-        km.setInputType(InputType.TYPE_CLASS_NUMBER |
-                InputType.TYPE_NUMBER_FLAG_DECIMAL);
+        EditText kmCampo = campo("Distância estimada (km)");
+        EditText telefone = campo("Seu número de telefone");
+        EditText detalhes = campo("Detalhes da carga");
 
-        clienteTel = campo("Telefone do cliente");
-        clienteTel.setInputType(InputType.TYPE_CLASS_PHONE);
+        kmCampo.setInputType(2);
 
-        detalhes = campo("Detalhes da carga ou mudança");
+        botao("Calcular preço", () -> {
+            try {
+                int km = Integer.parseInt(kmCampo.getText().toString());
 
-        box.addView(texto(
-                "Mínimo: 35.000 Kz + 1.050 Kz por km",
-                16, verde, true));
+                if (km <= 0) {
+                    aviso("Insira uma distância válida.");
+                    return;
+                }
 
-        Button calc = botao("CALCULAR ESTIMATIVA");
-        box.addView(calc);
+                int preco = calcular(km);
 
-        precoView = texto("Estimativa: —", 23, verde, true);
-        precoView.setGravity(Gravity.CENTER);
-        box.addView(precoView);
+                new AlertDialog.Builder(this)
+                        .setTitle("Estimativa do transporte")
+                        .setMessage("Distância: " + km + " km\n"
+                                + "Preço estimado: " + dinheiro(preco)
+                                + "\n\nO valor final pode ser ajustado.")
+                        .setPositiveButton("Continuar", (d, w) ->
+                                guardarPedido(
+                                        origem.getText().toString(),
+                                        destino.getText().toString(),
+                                        servico.getSelectedItem().toString(),
+                                        veiculo.getSelectedItem().toString(),
+                                        km,
+                                        preco,
+                                        telefone.getText().toString(),
+                                        detalhes.getText().toString()
+                                ))
+                        .setNegativeButton("Cancelar", null)
+                        .show();
 
-        calc.setOnClickListener(v -> calcular());
+            } catch (Exception e) {
+                aviso("Introduza a distância em km.");
+            }
+        });
 
-        Button enviar = botao("GUARDAR PEDIDO E ENVIAR");
-        box.addView(enviar);
-        enviar.setOnClickListener(v -> criarPedido());
+        voltar();
     }
 
-    private void telaMotorista() {
-        layoutBase();
-        cabecalho("CANDIDATURA DE MOTORISTA");
-        box.addView(botaoVoltar());
-
-        nome = campo("Nome completo");
-        motoristaTel = campo("Telefone / WhatsApp");
-        motoristaTel.setInputType(InputType.TYPE_CLASS_PHONE);
-
-        viatura = spinner("Tipo de viatura", new String[]{
-                "Carrinha pequena", "Carrinha grande", "Camião", "Outro"
-        });
-
-        matricula = campo("Matrícula");
-        provincia = spinner("Província", new String[]{
-                "Luanda", "Bengo", "Benguela", "Huambo", "Huíla",
-                "Malanje", "Cuanza Norte", "Cuanza Sul", "Namibe",
-                "Cabinda", "Zaire", "Uíge", "Lunda Norte",
-                "Lunda Sul", "Moxico", "Bié", "Cuando", "Cubango"
-        });
-        municipio = campo("Município");
-        extra = campo("Informações adicionais (opcional)");
-
-        Button registar = botao("GUARDAR CANDIDATURA");
-        box.addView(registar);
-        registar.setOnClickListener(v -> guardarMotorista());
-    }
-
-    private void guardarMotorista() {
-        String n = nome.getText().toString().trim();
-        String t = motoristaTel.getText().toString().trim();
-        String mat = matricula.getText().toString().trim();
-        String mun = municipio.getText().toString().trim();
-
-        if (n.isEmpty() || t.isEmpty() || mat.isEmpty() || mun.isEmpty()) {
-            aviso("Preenche nome, telefone, matrícula e município.");
-            return;
-        }
-
+    private void guardarPedido(
+            String origem,
+            String destino,
+            String servico,
+            String veiculo,
+            int km,
+            int preco,
+            String telefone,
+            String detalhes
+    ) {
         try {
-            JSONObject j = new JSONObject();
-            j.put("id", "M-" + System.currentTimeMillis());
-            j.put("nome", n);
-            j.put("telefone", t);
-            j.put("viatura", viatura.getSelectedItem().toString());
-            j.put("matricula", mat);
-            j.put("provincia", provincia.getSelectedItem().toString());
-            j.put("municipio", mun);
-            j.put("extra", extra.getText().toString());
-            j.put("estado", "PENDENTE");
-            j.put("disponivel", false);
+            JSONObject p = new JSONObject();
 
-            motoristas.put(j);
-            guardar();
+            String id = "OA-" + System.currentTimeMillis();
 
-            aviso("Candidatura guardada! Aguarda aprovação.");
-            inicio();
+            p.put("id", id);
+            p.put("origem", origem);
+            p.put("destino", destino);
+            p.put("servico", servico);
+            p.put("veiculo", veiculo);
+            p.put("km", km);
+            p.put("preco", preco);
+            p.put("telefone", telefone);
+            p.put("detalhes", detalhes);
+            p.put("estado", "PENDENTE");
+
+            pedidos.put(p);
+            salvar();
+
+            String msg = "NOVO PEDIDO - ÓTIMO ANGOLA\n"
+                    + "Código: " + id + "\n"
+                    + "Serviço: " + servico + "\n"
+                    + "Origem: " + origem + "\n"
+                    + "Destino: " + destino + "\n"
+                    + "Veículo: " + veiculo + "\n"
+                    + "Distância: " + km + " km\n"
+                    + "Preço: " + dinheiro(preco) + "\n"
+                    + "Cliente: " + telefone + "\n"
+                    + "Detalhes: " + detalhes;
+
+            sucessoPedido(msg);
 
         } catch (Exception e) {
-            aviso("Erro ao guardar candidatura.");
+            aviso("Não foi possível guardar o pedido.");
         }
     }
 
-    private void calcular() {
-        long valor = valorKm();
-        if (valor < 0) {
-            aviso("Introduz uma distância válida.");
-            return;
-        }
-        precoView.setText("Estimativa: " + formatar(valor) + " Kz");
+    private void sucessoPedido(String msg) {
+        base("Pedido registado", "O seu pedido foi guardado.");
+
+        texto("A ÓTIMO ANGOLA recebeu os dados do seu transporte.");
+
+        botao("Enviar pedido por WhatsApp", () -> whatsapp(msg));
+
+        voltar();
     }
 
-    private long valorKm() {
-        try {
-            double distancia = Double.parseDouble(
-                    km.getText().toString().trim().replace(",", "."));
-            if (distancia <= 0 || distancia > 10000) return -1;
-            return Math.round(base + (distancia * porKm));
-        } catch (Exception e) {
-            return -1;
-        }
+    // ================= MOTORISTA =================
+
+    private void cadastroMotorista() {
+        base("Cadastro de motorista", "Registe os seus dados para trabalhar.");
+
+        EditText nome = campo("Nome completo");
+        EditText telefone = campo("Número de telefone");
+        EditText matricula = campo("Matrícula da viatura");
+        EditText municipio = campo("Município");
+        EditText extra = campo("Marca e modelo da viatura");
+
+        Spinner tipo = spinner(new String[]{
+                "Carrinha pequena",
+                "Carrinha grande",
+                "Caminhão",
+                "Outro"
+        });
+
+        botao("Enviar cadastro", () -> {
+            if (nome.getText().toString().trim().isEmpty()
+                    || telefone.getText().toString().trim().isEmpty()
+                    || matricula.getText().toString().trim().isEmpty()) {
+                aviso("Preencha nome, telefone e matrícula.");
+                return;
+            }
+
+            try {
+                JSONObject m = new JSONObject();
+
+                m.put("id", "M-" + System.currentTimeMillis());
+                m.put("nome", nome.getText().toString());
+                m.put("telefone", telefone.getText().toString());
+                m.put("matricula", matricula.getText().toString());
+                m.put("municipio", municipio.getText().toString());
+                m.put("veiculo", tipo.getSelectedItem().toString());
+                m.put("extra", extra.getText().toString());
+                m.put("estado", "PENDENTE");
+                m.put("disponivel", false);
+
+                motoristas.put(m);
+                salvar();
+
+                base("Cadastro recebido", "A sua candidatura foi registada.");
+                texto("Estado: PENDENTE DE APROVAÇÃO.");
+                texto("A administração irá verificar os seus dados.");
+
+                voltar();
+
+            } catch (Exception e) {
+                aviso("Erro ao guardar cadastro.");
+            }
+        });
+
+        voltar();
     }
 
-    private void criarPedido() {
-        String o = origem.getText().toString().trim();
-        String d = destino.getText().toString().trim();
-        String t = clienteTel.getText().toString().trim();
-        long preco = valorKm();
-
-        if (o.isEmpty() || d.isEmpty() || t.isEmpty() || preco < 0) {
-            aviso("Preenche origem, destino, telefone e distância válida.");
-            return;
-        }
-
-        try {
-            String id = "OA-" + (pedidos.length() + 1) + "-" +
-                    (System.currentTimeMillis() % 100000);
-
-            JSONObject j = new JSONObject();
-            j.put("id", id);
-            j.put("servico", servico.getSelectedItem().toString());
-            j.put("origem", o);
-            j.put("destino", d);
-            j.put("viatura", viatura.getSelectedItem().toString());
-            j.put("km", km.getText().toString());
-            j.put("preco", preco);
-            j.put("telefone", t);
-            j.put("detalhes", detalhes.getText().toString());
-            j.put("estado", "PENDENTE");
-
-            pedidos.put(j);
-            guardar();
-
-            String msg = "NOVO PEDIDO - OTIMO ANGOLA\\n" +
-                    "Código: " + id + "\\n" +
-                    "Serviço: " + j.getString("servico") + "\\n" +
-                    "Origem: " + o + "\\nDestino: " + d + "\\n" +
-                    "Viatura: " + j.getString("viatura") + "\\n" +
-                    "Distância: " + km.getText() + " km\\n" +
-                    "Preço: " + formatar(preco) + " Kz\\n" +
-                    "Cliente: " + t + "\\n" +
-                    "Detalhes: " + detalhes.getText() + "\\n" +
-                    "Estado: PENDENTE";
-
-            aviso("Pedido " + id + " guardado!");
-            whatsappMsg(msg);
-            inicio();
-
-        } catch (Exception e) {
-            aviso("Não foi possível guardar pedido.");
-        }
-    }
+    // ================= ADMIN =================
 
     private void loginAdmin() {
         EditText pin = new EditText(this);
         pin.setHint("PIN de administrador");
-        pin.setInputType(InputType.TYPE_CLASS_NUMBER |
-                InputType.TYPE_NUMBER_VARIATION_PASSWORD);
+        pin.setInputType(2);
 
         new AlertDialog.Builder(this)
-                .setTitle("Administração ÓTIMO ANGOLA")
+                .setTitle("Área administrativa")
                 .setView(pin)
-                .setPositiveButton("Entrar", (dialog, which) -> {
-                    if (PIN_ADMIN.equals(pin.getText().toString())) {
-                        telaAdmin();
+                .setPositiveButton("Entrar", (d, w) -> {
+                    if (pin.getText().toString().equals(PIN_ADMIN)) {
+                        admin();
                     } else {
                         aviso("PIN incorreto.");
                     }
@@ -306,180 +335,198 @@ public class MainActivity extends Activity {
                 .show();
     }
 
-    private void telaAdmin() {
-        layoutBase();
-        cabecalho("PAINEL DE ADMINISTRAÇÃO");
+    private void admin() {
+        base("Painel administrativo", "Gestão da ÓTIMO ANGOLA");
 
-        box.addView(botaoVoltar());
+        botao("Pedidos (" + pedidos.length() + ")", this::listaPedidos);
+        botao("Motoristas (" + motoristas.length() + ")", this::listaMotoristas);
 
-        box.addView(texto("PEDIDOS (" + pedidos.length() + ")",
-                21, verde, true));
+        botao("Atualizar dados", this::admin);
+        voltar();
+    }
+
+    // ================= GESTÃO PEDIDOS =================
+
+    private void listaPedidos() {
+        base("Pedidos", "Gestão das solicitações");
 
         if (pedidos.length() == 0) {
-            box.addView(texto("Ainda não há pedidos guardados.",
-                    16, Color.DKGRAY, false));
+            texto("Ainda não existem pedidos.");
         }
 
         for (int i = pedidos.length() - 1; i >= 0; i--) {
-            final int idx = i;
             JSONObject p = pedidos.optJSONObject(i);
             if (p == null) continue;
 
-            String resumo = "Código: " + p.optString("id") +
-                    "\n" + p.optString("origem") + " → " +
-                    p.optString("destino") +
-                    "\nPreço: " + formatar(p.optLong("preco")) + " Kz" +
-                    "\nEstado: " + p.optString("estado");
+            String id = p.optString("id");
+            String estado = p.optString("estado", "PENDENTE");
 
-            Button b = botao(resumo + "\nALTERAR ESTADO");
-            box.addView(b);
-            b.setOnClickListener(v -> mudarEstadoPedido(idx));
+            texto(
+                    "Código: " + id
+                            + "\nOrigem: " + p.optString("origem")
+                            + "\nDestino: " + p.optString("destino")
+                            + "\nPreço: " + dinheiro(p.optInt("preco"))
+                            + "\nEstado: " + estado
+            );
+
+            botao("Alterar estado: " + id, () -> mudarEstadoPedido(id));
+            botao("Enviar pedido ao WhatsApp", () -> whatsapp(
+                    "PEDIDO " + id
+                            + "\nOrigem: " + p.optString("origem")
+                            + "\nDestino: " + p.optString("destino")
+                            + "\nCliente: " + p.optString("telefone")
+                            + "\nPreço: " + dinheiro(p.optInt("preco"))
+                            + "\nEstado: " + p.optString("estado")
+            ));
         }
 
-        box.addView(texto("MOTORISTAS (" + motoristas.length() + ")",
-                21, verde, true));
-
-        if (motoristas.length() == 0) {
-            box.addView(texto("Ainda não há motoristas registados.",
-                    16, Color.DKGRAY, false));
-        }
-
-        for (int i = motoristas.length() - 1; i >= 0; i--) {
-            final int idx = i;
-            JSONObject m = motoristas.optJSONObject(i);
-            if (m == null) continue;
-
-            String resumo = m.optString("nome") +
-                    "\n" + m.optString("telefone") +
-                    "\nViatura: " + m.optString("viatura") +
-                    "\nMatrícula: " + m.optString("matricula") +
-                    "\nLocal: " + m.optString("municipio") +
-                    ", " + m.optString("provincia") +
-                    "\nAprovação: " + m.optString("estado") +
-                    "\nDisponível: " + (m.optBoolean("disponivel") ?
-                    "SIM" : "NÃO");
-
-            Button b = botao(resumo + "\nGERIR MOTORISTA");
-            box.addView(b);
-            b.setOnClickListener(v -> gerirMotorista(idx));
-        }
+        voltar();
     }
 
-    private void mudarEstadoPedido(int idx) {
-        String[] estados = {"PENDENTE", "ATRIBUÍDO", "CONCLUÍDO", "CANCELADO"};
+    private void mudarEstadoPedido(String id) {
+        String[] estados = {
+                "PENDENTE",
+                "ATRIBUÍDO",
+                "CONCLUÍDO",
+                "CANCELADO"
+        };
 
         new AlertDialog.Builder(this)
                 .setTitle("Estado do pedido")
                 .setItems(estados, (dialog, escolha) -> {
-                    JSONObject p = pedidos.optJSONObject(idx);
-                    if (p == null) return;
-                    p.putSafe("estado", estados[escolha]);
-                    guardar();
-                    telaAdmin();
-                }).show();
+                    for (int i = 0; i < pedidos.length(); i++) {
+                        JSONObject p = pedidos.optJSONObject(i);
+
+                        if (p != null && p.optString("id").equals(id)) {
+                            safePut(p, "estado", estados[escolha]);
+                        }
+                    }
+
+                    salvar();
+                    listaPedidos();
+                })
+                .show();
     }
 
-    private void gerirMotorista(int idx) {
-        JSONObject m = motoristas.optJSONObject(idx);
-        if (m == null) return;
+    // ================= GESTÃO MOTORISTAS =================
 
-        String estado = m.optString("estado", "PENDENTE");
-        boolean disp = m.optBoolean("disponivel", false);
+    private void listaMotoristas() {
+        base("Motoristas", "Gestão dos motoristas cadastrados");
 
+        if (motoristas.length() == 0) {
+            texto("Ainda não existem motoristas.");
+        }
+
+        for (int i = 0; i < motoristas.length(); i++) {
+            JSONObject m = motoristas.optJSONObject(i);
+            if (m == null) continue;
+
+            String id = m.optString("id");
+
+            texto(
+                    "Nome: " + m.optString("nome")
+                            + "\nTelefone: " + m.optString("telefone")
+                            + "\nViatura: " + m.optString("veiculo")
+                            + "\nMatrícula: " + m.optString("matricula")
+                            + "\nMunicípio: " + m.optString("municipio")
+                            + "\nEstado: " + m.optString("estado")
+                            + "\nDisponível: " + m.optBoolean("disponivel")
+            );
+
+            botao("Gerir motorista", () -> gerirMotorista(id));
+        }
+
+        voltar();
+    }
+
+    private void gerirMotorista(String id) {
         String[] opcoes = {
-                "APROVAR MOTORISTA",
-                "REJEITAR CANDIDATURA",
-                " " + (disp ? "MARCAR INDISPONÍVEL" : "MARCAR DISPONÍVEL")
+                "APROVAR",
+                "REJEITAR",
+                "ATIVAR/DESATIVAR DISPONIBILIDADE"
         };
 
         new AlertDialog.Builder(this)
-                .setTitle(m.optString("nome"))
-                .setItems(opcoes, (dialog, escolha) -> {
-                    if (escolha == 0) {
-                        m.putSafe("estado", "APROVADO");
-                    } else if (escolha == 1) {
-                        m.putSafe("estado", "REJEITADO");
-                        m.putSafe("disponivel", false);
-                    } else {
-                        if (!"APROVADO".equals(estado)) {
-                            aviso("Aprova o motorista primeiro.");
-                            return;
+                .setTitle("Gestão do motorista")
+                .setItems(opcoes, (d, escolha) -> {
+
+                    for (int i = 0; i < motoristas.length(); i++) {
+                        JSONObject m = motoristas.optJSONObject(i);
+
+                        if (m == null || !m.optString("id").equals(id)) {
+                            continue;
                         }
-                        m.putSafe("disponivel", !disp);
+
+                        if (escolha == 0) {
+                            safePut(m, "estado", "APROVADO");
+                        }
+
+                        if (escolha == 1) {
+                            safePut(m, "estado", "REJEITADO");
+                            safePut(m, "disponivel", false);
+                        }
+
+                        if (escolha == 2) {
+                            boolean disp = m.optBoolean("disponivel");
+                            safePut(m, "disponivel", !disp);
+                        }
                     }
-                    guardar();
-                    telaAdmin();
-                }).show();
+
+                    salvar();
+                    listaMotoristas();
+                })
+                .show();
     }
 
-    private void whatsappMsg(String msg) {
-        String url = "https://wa.me/" + whatsapp +
-                "?text=" + Uri.encode(msg);
-        try {
-            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
-        } catch (Exception e) {
-            aviso("WhatsApp não abriu.");
-        }
-    }
+    // ================= UTILIDADES =================
 
-    private String formatar(long valor) {
-        return NumberFormat.getInstance(new Locale("pt", "AO"))
-                .format(valor);
-    }
-
-    private EditText campo(String dica) {
-        EditText e = new EditText(this);
-        e.setHint(dica);
-        e.setTextSize(16);
-        e.setPadding(20, 18, 20, 18);
-        e.setBackgroundColor(Color.WHITE);
-        box.addView(e);
-        return e;
-    }
-
-    private Spinner spinner(String titulo, String[] itens) {
-        box.addView(texto(titulo, 15, verde, true));
+    private Spinner spinner(String[] opcoes) {
         Spinner s = new Spinner(this);
-        ArrayAdapter<String> a = new ArrayAdapter<>(
-                this, android.R.layout.simple_spinner_item, itens);
-        a.setDropDownViewResource(
-                android.R.layout.simple_spinner_dropdown_item);
-        s.setAdapter(a);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_spinner_dropdown_item,
+                opcoes
+        );
+
+        s.setAdapter(adapter);
         box.addView(s);
+
         return s;
     }
 
-    private TextView texto(String t, int size, int cor, boolean bold) {
-        TextView v = new TextView(this);
-        v.setText(t);
-        v.setTextSize(size);
-        v.setTextColor(cor);
-        if (bold) v.setTypeface(null, Typeface.BOLD);
-        v.setPadding(0, 12, 0, 12);
-        return v;
+    private void salvar() {
+        storage.edit()
+                .putString("pedidos", pedidos.toString())
+                .putString("motoristas", motoristas.toString())
+                .apply();
     }
 
-    private Button botao(String t) {
-        Button b = new Button(this);
-        b.setText(t);
-        b.setTextColor(Color.WHITE);
-        b.setBackgroundTintList(
-                android.content.res.ColorStateList.valueOf(verde));
-        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT);
-        p.setMargins(0, 10, 0, 10);
-        b.setLayoutParams(p);
-        return b;
+    private void safePut(JSONObject obj, String key, Object value) {
+        try {
+            obj.put(key, value);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    private Button botaoVoltar() {
-        Button b = botao("← VOLTAR");
-        b.setOnClickListener(v -> inicio());
-        return b;
+    private void whatsapp(String mensagem) {
+        try {
+            String url = "https://wa.me/" + WHATSAPP
+                    + "?text=" + Uri.encode(mensagem);
+
+            Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            startActivity(i);
+
+        } catch (Exception e) {
+            aviso("Não foi possível abrir o WhatsApp.");
+        }
     }
 
-    private void aviso(String s) {
-        Toast.makeText(this, s, Toast.LENGTH_LONG).show();
+    private void aviso(String mensagem) {
+        new AlertDialog.Builder(this)
+                .setMessage(mensagem)
+                .setPositiveButton("OK", null)
+                .show();
     }
 }
