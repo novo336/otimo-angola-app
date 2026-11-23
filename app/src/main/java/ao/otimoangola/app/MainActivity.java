@@ -3,436 +3,212 @@ package ao.otimoangola.app;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.os.Bundle;
-import android.content.SharedPreferences;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.view.Gravity;
 import android.view.View;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.*;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.text.NumberFormat;
-import java.util.Locale;
-
 public class MainActivity extends Activity {
 
-    private LinearLayout box;
-    private SharedPreferences storage;
-
-    private JSONArray pedidos;
-    private JSONArray motoristas;
-
-    private final int BASE = 35000;
-    private final int POR_KM = 1050;
-
-    private final String WHATSAPP = "244900000000";
-    private final String PIN_ADMIN = "2026";
-
-    // ===== CORES ÓTIMO ANGOLA =====
-    private final int FUNDO = Color.rgb(13, 17, 22);
-    private final int CARD = Color.rgb(25, 32, 40);
+    // CORES
+    private final int FUNDO = Color.rgb(13, 15, 18);
+    private final int CARD = Color.rgb(26, 29, 34);
     private final int VERDE = Color.rgb(205, 255, 53);
     private final int BRANCO = Color.WHITE;
-    private final int CINZA = Color.rgb(155, 166, 178);
+    private final int CINZA = Color.rgb(160, 165, 172);
+
+    // CONFIGURAÇÕES
+    private final int BASE = 35000;
+    private final int POR_KM = 1050;
+    private final int COMISSAO = 10;
+
+    private final String WHATSAPP = "244962670068";
+    private final String PIN_ADMIN = "2026";
+
+    // DADOS
+    private SharedPreferences prefs;
+    private JSONArray pedidos;
+    private JSONArray motoristas;
+    private String telefoneCliente = "";
+
+    private LinearLayout layout;
+    private ScrollView scroll;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        getWindow().setStatusBarColor(Color.rgb(13, 17, 22));
-        getWindow().setNavigationBarColor(Color.rgb(13, 17, 22));
+        getWindow().setStatusBarColor(FUNDO);
+        getWindow().setNavigationBarColor(FUNDO);
 
-        storage = getSharedPreferences("OTIMO_DATA", MODE_PRIVATE);
+        prefs = getSharedPreferences("OTIMO_DATA", MODE_PRIVATE);
 
-        try {
-            pedidos = new JSONArray(storage.getString("pedidos", "[]"));
-            motoristas = new JSONArray(storage.getString("motoristas", "[]"));
-        } catch (Exception e) {
-            pedidos = new JSONArray();
-            motoristas = new JSONArray();
+        pedidos = carregarArray("pedidos");
+        motoristas = carregarArray("motoristas");
+
+        telefoneCliente = prefs.getString("user_phone", "");
+
+        if (telefoneCliente.isEmpty()) {
+            boasVindas();
+        } else {
+            inicio();
         }
-
-        inicio();
     }
 
-    // ================= INÍCIO =================
+    // =========================================
+    // BOAS-VINDAS
+    // =========================================
+
+    private void boasVindas() {
+        base();
+
+        espacamento(35);
+
+        texto("ÓTIMO", 42, VERDE, true);
+        texto("ANGOLA", 28, BRANCO, true);
+
+        espacamento(10);
+
+        texto("Movemos o que importa.", 16, CINZA, false);
+
+        espacamento(35);
+
+        card("TRANSPORTE SIMPLES.\nRÁPIDO. CONFIÁVEL.");
+
+        espacamento(20);
+
+        botao("COMEÇAR", this::cadastroCliente);
+
+        botaoSecundario("Já tenho conta", this::entrarCliente);
+
+        espacamento(15);
+
+        botaoSecundario("Sou motorista", this::cadastroMotorista);
+
+        botaoSecundario("Área administrativa", this::administrador);
+    }
+
+    // =========================================
+    // REGISTO / LOGIN CLIENTE
+    // =========================================
+
+    private void cadastroCliente() {
+        EditText telefone = campo("Número de telefone");
+
+        new AlertDialog.Builder(this)
+                .setTitle("Criar conta")
+                .setMessage("Introduza o seu número de telefone.")
+                .setView(telefone)
+                .setPositiveButton("CONTINUAR", (d, w) -> {
+
+                    String numero = telefone.getText().toString().trim();
+
+                    if (numero.length() < 9) {
+                        aviso("Introduza um número de telefone válido.");
+                        return;
+                    }
+
+                    telefoneCliente = numero;
+
+                    prefs.edit()
+                            .putString("user_phone", numero)
+                            .apply();
+
+                    inicio();
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
+    }
+
+    private void entrarCliente() {
+        EditText telefone = campo("Número de telefone");
+        telefone.setText(telefoneCliente);
+
+        new AlertDialog.Builder(this)
+                .setTitle("Entrar")
+                .setMessage("Introduza o seu número de telefone.")
+                .setView(telefone)
+                .setPositiveButton("ENTRAR", (d, w) -> {
+
+                    String numero = telefone.getText().toString().trim();
+
+                    if (numero.length() < 9) {
+                        aviso("Número inválido.");
+                        return;
+                    }
+
+                    telefoneCliente = numero;
+
+                    prefs.edit()
+                            .putString("user_phone", numero)
+                            .apply();
+
+                    inicio();
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
+    }
+
+    // =========================================
+    // MENU PRINCIPAL
+    // =========================================
 
     private void inicio() {
+        base();
 
-        base("ÓTIMO ANGOLA", "TRANSPORTES • LOGÍSTICA • MUDANÇAS");
+        topo("ÓTIMO ANGOLA", "Movemos o que importa.");
 
-        // Cartão principal
-        LinearLayout hero = card();
+        card("BEM-VINDO\n" + telefoneCliente);
 
-        TextView tag = new TextView(this);
-        tag.setText("  LOGÍSTICA À TUA MANEIRA  ");
-        tag.setTextColor(Color.BLACK);
-        tag.setTextSize(11);
-        tag.setTypeface(null, Typeface.BOLD);
-        tag.setPadding(dp(10), dp(8), dp(10), dp(8));
-        tag.setBackground(fundo(VERDE, 30));
-        hero.addView(tag);
+        texto("O QUE PRECISA DE TRANSPORTAR?", 15, VERDE, true);
 
-        TextView slogan = new TextView(this);
-        slogan.setText("Movemos\n");
-        slogan.append("o que importa.");
-        slogan.setTextSize(32);
-        slogan.setTypeface(null, Typeface.BOLD);
-        slogan.setTextColor(BRANCO);
-        slogan.setPadding(0, dp(20), 0, dp(8));
-        hero.addView(slogan);
+        botao("MUDANÇA RESIDENCIAL", () ->
+                cliente("Mudança residencial"));
 
-        TextView desc = new TextView(this);
-        desc.setText(
-                "Mudanças, mercadorias e entregas.\n"
-                        + "O teu transporte começa aqui."
-        );
-        desc.setTextSize(15);
-        desc.setTextColor(CINZA);
-        desc.setPadding(0, 0, 0, dp(20));
-        hero.addView(desc);
+        botao("TRANSPORTE DE MERCADORIAS", () ->
+                cliente("Transporte de mercadorias"));
 
-        TextView preco = new TextView(this);
-        preco.setText("A partir de 35.000 Kz");
-        preco.setTextColor(VERDE);
-        preco.setTextSize(18);
-        preco.setTypeface(null, Typeface.BOLD);
-        hero.addView(preco);
+        botao("ENTREGA", () ->
+                cliente("Entrega"));
 
-        botao("Solicitar transporte", this::cliente);
+        espacamento(15);
 
-        // Serviços
-        tituloSecao("OS NOSSOS SERVIÇOS");
+        botaoSecundario("OS MEUS PEDIDOS", this::meusPedidos);
 
-        servicoCard("01", "Mudanças", "Transportamos os teus bens.");
-        servicoCard("02", "Mercadorias", "Transporte de cargas e produtos.");
-        servicoCard("03", "Entregas", "Movimentação e entrega de encomendas.");
+        botaoSecundario("ALTERAR TELEFONE", this::cadastroCliente);
 
-        tituloSecao("FAZ PARTE DA ÓTIMO");
+        botaoSecundario("CADASTRAR COMO MOTORISTA", this::cadastroMotorista);
 
-        botaoSecundario("Cadastrar motorista", this::cadastroMotorista);
-        botaoSecundario("Painel administrativo", this::loginAdmin);
+        botaoSecundario("ÁREA ADMINISTRATIVA", this::administrador);
 
-        textoRodape("ÓTIMO ANGOLA\nMovemos o que importa.");
+        espacamento(25);
+
+        texto("ÓTIMO ANGOLA", 12, CINZA, true);
     }
 
-    private void servicoCard(String numero, String nome, String descricao) {
-        LinearLayout c = card();
-        c.setOrientation(LinearLayout.HORIZONTAL);
-        c.setGravity(Gravity.CENTER_VERTICAL);
+    // =========================================
+    // NOVO PEDIDO
+    // =========================================
 
-        TextView n = new TextView(this);
-        n.setText(numero);
-        n.setTextColor(VERDE);
-        n.setTextSize(20);
-        n.setTypeface(null, Typeface.BOLD);
-        n.setPadding(0, 0, dp(18), 0);
-        c.addView(n);
+    private void cliente(String servico) {
+        base();
 
-        LinearLayout coluna = new LinearLayout(this);
-        coluna.setOrientation(LinearLayout.VERTICAL);
+        topo("NOVO PEDIDO", servico);
 
-        TextView t = new TextView(this);
-        t.setText(nome);
-        t.setTextColor(BRANCO);
-        t.setTextSize(17);
-        t.setTypeface(null, Typeface.BOLD);
+        EditText origem = campo("Local de partida");
+        EditText destino = campo("Local de destino");
+        EditText distancia = campo("Distância estimada em km");
+        EditText descricao = campo("Descrição da carga (opcional)");
 
-        TextView d = new TextView(this);
-        d.setText(descricao);
-        d.setTextColor(CINZA);
-        d.setTextSize(13);
-        d.setPadding(0, dp(5), 0, 0);
-
-        coluna.addView(t);
-        coluna.addView(d);
-
-        c.addView(coluna);
-    }
-
-    // ================= BASE VISUAL =================
-
-    private void base(String titulo, String subtitulo) {
-
-        LinearLayout root = new LinearLayout(this);
-        root.setOrientation(LinearLayout.VERTICAL);
-        root.setBackgroundColor(FUNDO);
-
-        ScrollView scroll = new ScrollView(this);
-        scroll.setFillViewport(false);
-
-        box = new LinearLayout(this);
-        box.setOrientation(LinearLayout.VERTICAL);
-        box.setPadding(dp(22), dp(24), dp(22), dp(35));
-        box.setBackgroundColor(FUNDO);
-
-        scroll.addView(box);
-        root.addView(scroll);
-
-        setContentView(root);
-
-        // Cabeçalho / marca
-        TextView logo = new TextView(this);
-        logo.setText("ÓTIMO  /  ANGOLA");
-        logo.setTextColor(VERDE);
-        logo.setTextSize(14);
-        logo.setTypeface(null, Typeface.BOLD);
-        logo.setLetterSpacing(0.08f);
-        logo.setPadding(0, dp(8), 0, dp(18));
-        box.addView(logo);
-
-        TextView t = new TextView(this);
-        t.setText(titulo);
-        t.setTextSize(27);
-        t.setTypeface(null, Typeface.BOLD);
-        t.setTextColor(BRANCO);
-        t.setGravity(Gravity.START);
-        box.addView(t);
-
-        TextView s = new TextView(this);
-        s.setText(subtitulo);
-        s.setTextSize(13);
-        s.setTextColor(CINZA);
-        s.setPadding(0, dp(8), 0, dp(22));
-        box.addView(s);
-
-        animarEntrada(logo, 0);
-        animarEntrada(t, 1);
-        animarEntrada(s, 2);
-    }
-
-    private LinearLayout card() {
-        LinearLayout c = new LinearLayout(this);
-        c.setOrientation(LinearLayout.VERTICAL);
-        c.setPadding(dp(18), dp(18), dp(18), dp(18));
-        c.setBackground(fundo(CARD, 20));
-
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                -1, -2
-        );
-        lp.setMargins(0, dp(8), 0, dp(12));
-        c.setLayoutParams(lp);
-
-        box.addView(c);
-        animarEntrada(c, box.getChildCount());
-        return c;
-    }
-
-    private void tituloSecao(String texto) {
-        TextView t = new TextView(this);
-        t.setText(texto);
-        t.setTextColor(VERDE);
-        t.setTextSize(12);
-        t.setTypeface(null, Typeface.BOLD);
-        t.setLetterSpacing(0.08f);
-        t.setPadding(0, dp(22), 0, dp(8));
-        box.addView(t);
-        animarEntrada(t, box.getChildCount());
-    }
-
-    private void texto(String value) {
-        TextView t = new TextView(this);
-        t.setText(value);
-        t.setTextSize(15);
-        t.setTextColor(BRANCO);
-        t.setPadding(dp(16), dp(14), dp(16), dp(14));
-        t.setBackground(fundo(CARD, 16));
-
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                -1, -2
-        );
-        lp.setMargins(0, dp(5), 0, dp(5));
-        t.setLayoutParams(lp);
-
-        box.addView(t);
-        animarEntrada(t, box.getChildCount());
-    }
-
-    private void textoRodape(String value) {
-        TextView t = new TextView(this);
-        t.setText(value);
-        t.setTextColor(CINZA);
-        t.setTextSize(12);
-        t.setGravity(Gravity.CENTER);
-        t.setPadding(0, dp(30), 0, dp(10));
-        box.addView(t);
-    }
-
-    // ================= CAMPOS =================
-
-    private EditText campo(String hint) {
-        EditText e = new EditText(this);
-        e.setHint(hint);
-        e.setTextSize(15);
-        e.setSingleLine(false);
-        e.setTextColor(BRANCO);
-        e.setHintTextColor(Color.rgb(135, 145, 155));
-        e.setPadding(dp(16), dp(13), dp(16), dp(13));
-        e.setBackground(fundo(CARD, 15));
-
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                -1, -2
-        );
-        lp.setMargins(0, dp(6), 0, dp(6));
-        e.setLayoutParams(lp);
-
-        box.addView(e);
-        animarEntrada(e, box.getChildCount());
-
-        return e;
-    }
-
-    // ================= BOTÕES =================
-
-    private void botao(String label, Runnable acao) {
-
-        Button b = new Button(this);
-        b.setText(label);
-        b.setTextSize(15);
-        b.setTypeface(null, Typeface.BOLD);
-        b.setAllCaps(false);
-        b.setTextColor(Color.rgb(15, 18, 20));
-        b.setPadding(dp(18), dp(14), dp(18), dp(14));
-        b.setBackground(fundo(VERDE, 18));
-
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                -1, dp(58)
-        );
-        lp.setMargins(0, dp(8), 0, dp(8));
-        b.setLayoutParams(lp);
-
-        b.setOnClickListener(v -> {
-            v.animate()
-                    .scaleX(0.97f)
-                    .scaleY(0.97f)
-                    .setDuration(80)
-                    .withEndAction(() -> {
-                        v.animate()
-                                .scaleX(1f)
-                                .scaleY(1f)
-                                .setDuration(100)
-                                .start();
-                        acao.run();
-                    })
-                    .start();
-        });
-
-        box.addView(b);
-        animarEntrada(b, box.getChildCount());
-    }
-
-    private void botaoSecundario(String label, Runnable acao) {
-
-        Button b = new Button(this);
-        b.setText(label);
-        b.setTextSize(15);
-        b.setAllCaps(false);
-        b.setTypeface(null, Typeface.BOLD);
-        b.setTextColor(VERDE);
-        b.setPadding(dp(15), dp(12), dp(15), dp(12));
-        b.setBackground(fundo(CARD, 18));
-
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                -1, dp(55)
-        );
-        lp.setMargins(0, dp(7), 0, dp(7));
-        b.setLayoutParams(lp);
-
-        b.setOnClickListener(v -> acao.run());
-
-        box.addView(b);
-        animarEntrada(b, box.getChildCount());
-    }
-
-    private void voltar() {
-        botaoSecundario("←  Voltar ao início", this::inicio);
-    }
-
-    // ================= ANIMAÇÕES =================
-
-    private void animarEntrada(View v, int ordem) {
-        v.setAlpha(0f);
-        v.setTranslationY(dp(18));
-
-        v.animate()
-                .alpha(1f)
-                .translationY(0)
-                .setStartDelay(Math.min(ordem * 35, 240))
-                .setDuration(380)
-                .setInterpolator(new DecelerateInterpolator())
-                .start();
-    }
-
-    // ================= UTILIDADES VISUAIS =================
-
-    private GradientDrawable fundo(int cor, int raio) {
-        GradientDrawable gd = new GradientDrawable();
-        gd.setColor(cor);
-        gd.setCornerRadius(dp(raio));
-        return gd;
-    }
-
-    private int dp(float valor) {
-        return (int) (valor * getResources()
-                .getDisplayMetrics().density + 0.5f);
-    }
-
-    private String dinheiro(int valor) {
-        return NumberFormat.getInstance(new Locale("pt", "AO"))
-                .format(valor) + " Kz";
-    }
-
-    private int calcular(int km) {
-        return BASE + (km * POR_KM);
-    }
-
-    private Spinner spinner(String[] opcoes) {
-        Spinner s = new Spinner(this);
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_spinner_item,
-                opcoes
-        );
-
-        adapter.setDropDownViewResource(
-                android.R.layout.simple_spinner_dropdown_item
-        );
-
-        s.setAdapter(adapter);
-        s.setBackground(fundo(CARD, 15));
-
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                -1, dp(55)
-        );
-        lp.setMargins(0, dp(6), 0, dp(6));
-        s.setLayoutParams(lp);
-
-        box.addView(s);
-        animarEntrada(s, box.getChildCount());
-
-        return s;
-    }
-
-    // ================= CLIENTE =================
-
-    private void cliente() {
-        base("Solicitar transporte", "Diz-nos o que precisas transportar.");
-
-        EditText origem = campo("Local de recolha");
-        EditText destino = campo("Local de entrega");
-
-        Spinner servico = spinner(new String[]{
-                "Mudança residencial",
-                "Transporte de mercadorias",
-                "Entrega"
-        });
+        texto("Tipo de veículo", 14, VERDE, true);
 
         Spinner veiculo = spinner(new String[]{
                 "Carrinha pequena",
@@ -441,143 +217,229 @@ public class MainActivity extends Activity {
                 "Outro"
         });
 
-        EditText kmCampo = campo("Distância estimada (km)");
-        EditText telefone = campo("Seu número de telefone");
-        EditText detalhes = campo("Detalhes da carga");
+        adicionar(origem);
+        adicionar(destino);
+        adicionar(distancia);
+        adicionar(descricao);
 
-        kmCampo.setInputType(2);
-        telefone.setInputType(3);
+        botao("CALCULAR PREÇO", () -> {
 
-        botao("CALCULAR PREÇO  →", () -> {
+            String o = origem.getText().toString().trim();
+            String d = destino.getText().toString().trim();
+            String k = distancia.getText().toString().trim();
+
+            if (o.isEmpty() || d.isEmpty() || k.isEmpty()) {
+                aviso("Preencha a partida, destino e distância.");
+                return;
+            }
+
+            double km;
+
             try {
-                if (origem.getText().toString().trim().isEmpty()
-                        || destino.getText().toString().trim().isEmpty()
-                        || telefone.getText().toString().trim().isEmpty()) {
-                    aviso("Preencha origem, destino e telefone.");
-                    return;
-                }
+                km = Double.parseDouble(k.replace(",", "."));
+            } catch (Exception e) {
+                aviso("Distância inválida.");
+                return;
+            }
 
-                int km = Integer.parseInt(
-                        kmCampo.getText().toString().trim()
+            if (km <= 0 || km > 10000) {
+                aviso("Introduza uma distância válida.");
+                return;
+            }
+
+            int preco = BASE + (int) Math.round(km * POR_KM);
+
+            confirmarPedido(
+                    servico,
+                    o,
+                    d,
+                    km,
+                    preco,
+                    veiculo.getSelectedItem().toString(),
+                    descricao.getText().toString().trim()
+            );
+        });
+
+        botaoSecundario("VOLTAR", this::inicio);
+    }
+
+    // =========================================
+    // CONFIRMAÇÃO
+    // =========================================
+
+    private void confirmarPedido(
+            String servico,
+            String origem,
+            String destino,
+            double km,
+            int preco,
+            String veiculo,
+            String descricao
+    ) {
+        base();
+
+        topo("CONFIRMAR PEDIDO", "Revise os dados.");
+
+        card("SERVIÇO: " + servico
+                + "\n\nPARTIDA: " + origem
+                + "\nDESTINO: " + destino
+                + "\nDISTÂNCIA: " + km + " km"
+                + "\nVEÍCULO: " + veiculo
+                + "\n\nVALOR ESTIMADO: " + formatar(preco) + " Kz");
+
+        texto("O valor poderá ser ajustado após confirmação das condições do transporte.",
+                13, CINZA, false);
+
+        botao("CONFIRMAR PEDIDO", () -> {
+
+            try {
+                JSONObject p = new JSONObject();
+
+                p.put("id", System.currentTimeMillis());
+                p.put("cliente", telefoneCliente);
+                p.put("servico", servico);
+                p.put("origem", origem);
+                p.put("destino", destino);
+                p.put("km", km);
+                p.put("preco", preco);
+                p.put("veiculo", veiculo);
+                p.put("descricao", descricao);
+
+                p.put("estado", "PENDENTE");
+                p.put("data", System.currentTimeMillis());
+
+                p.put("motorista", "");
+                p.put("motorista_telefone", "");
+
+                int comissao = (int) Math.round(preco * COMISSAO / 100.0);
+                int repasse = preco - comissao;
+
+                p.put("comissao_percent", COMISSAO);
+                p.put("comissao", comissao);
+                p.put("motorista_valor", repasse);
+
+                p.put("pagamento_estado", "PENDENTE");
+                p.put("pagamento_metodo", "Ainda não definido");
+                p.put("pagamento_tipo", "A definir");
+
+                pedidos.put(p);
+                salvar();
+
+                sucessoPedido(
+                        servico,
+                        origem,
+                        destino,
+                        preco,
+                        veiculo,
+                        descricao
                 );
 
-                if (km <= 0) {
-                    aviso("Insira uma distância válida.");
-                    return;
-                }
-
-                int preco = calcular(km);
-
-                new AlertDialog.Builder(this)
-                        .setTitle("Estimativa do transporte")
-                        .setMessage("Distância: " + km + " km\n\n"
-                                + "Preço estimado: " + dinheiro(preco)
-                                + "\n\nO valor final pode ser ajustado.")
-                        .setPositiveButton("Continuar", (d, w) ->
-                                guardarPedido(
-                                        origem.getText().toString(),
-                                        destino.getText().toString(),
-                                        servico.getSelectedItem().toString(),
-                                        veiculo.getSelectedItem().toString(),
-                                        km,
-                                        preco,
-                                        telefone.getText().toString(),
-                                        detalhes.getText().toString()
-                                ))
-                        .setNegativeButton("Cancelar", null)
-                        .show();
-
             } catch (Exception e) {
-                aviso("Introduza a distância em km.");
+                aviso("Não foi possível registar o pedido.");
             }
         });
 
-        voltar();
+        botaoSecundario("EDITAR", () -> cliente(servico));
+
+        botaoSecundario("VOLTAR", this::inicio);
     }
 
-    private void guardarPedido(
+    // =========================================
+    // PEDIDO REGISTADO
+    // =========================================
+
+    private void sucessoPedido(
+            String servico,
             String origem,
             String destino,
-            String servico,
-            String veiculo,
-            int km,
             int preco,
-            String telefone,
-            String detalhes
+            String veiculo,
+            String descricao
     ) {
-        try {
-            JSONObject p = new JSONObject();
+        base();
 
-            String id = "OA-" + System.currentTimeMillis();
+        topo("PEDIDO REGISTADO", "O seu pedido foi guardado.");
 
-            p.put("id", id);
-            p.put("origem", origem);
-            p.put("destino", destino);
-            p.put("servico", servico);
-            p.put("veiculo", veiculo);
-            p.put("km", km);
-            p.put("preco", preco);
-            p.put("telefone", telefone);
-            p.put("detalhes", detalhes);
-            p.put("estado", "PENDENTE");
+        card("PEDIDO RECEBIDO!\n\n"
+                + "VALOR ESTIMADO: " + formatar(preco) + " Kz"
+                + "\n\nESTADO: PENDENTE");
 
-            pedidos.put(p);
-            salvar();
+        texto("A nossa equipa poderá entrar em contacto para confirmar os detalhes.",
+                14, CINZA, false);
 
-            String msg = "NOVO PEDIDO - ÓTIMO ANGOLA\n"
-                    + "Código: " + id + "\n"
-                    + "Serviço: " + servico + "\n"
-                    + "Origem: " + origem + "\n"
-                    + "Destino: " + destino + "\n"
-                    + "Veículo: " + veiculo + "\n"
-                    + "Distância: " + km + " km\n"
-                    + "Preço: " + dinheiro(preco) + "\n"
-                    + "Cliente: " + telefone + "\n"
-                    + "Detalhes: " + detalhes;
+        botao("CONTACTAR ÓTIMO ANGOLA", () -> {
 
-            sucessoPedido(msg);
+            String mensagem =
+                    "Olá, ÓTIMO ANGOLA! Solicitei um serviço.\n\n"
+                    + "Serviço: " + servico
+                    + "\nPartida: " + origem
+                    + "\nDestino: " + destino
+                    + "\nVeículo: " + veiculo
+                    + "\nValor: " + formatar(preco) + " Kz"
+                    + "\nCliente: " + telefoneCliente
+                    + "\nDescrição: " + descricao;
 
-        } catch (Exception e) {
-            aviso("Não foi possível guardar o pedido.");
+            whatsapp(mensagem);
+        });
+
+        botaoSecundario("OS MEUS PEDIDOS", this::meusPedidos);
+
+        botaoSecundario("PÁGINA INICIAL", this::inicio);
+    }
+
+    // =========================================
+    // PEDIDOS DO CLIENTE
+    // =========================================
+
+    private void meusPedidos() {
+        base();
+
+        topo("OS MINHAS SOLICITAÇÕES", telefoneCliente);
+
+        boolean encontrou = false;
+
+        for (int i = pedidos.length() - 1; i >= 0; i--) {
+            JSONObject p = pedidos.optJSONObject(i);
+
+            if (p == null) continue;
+
+            if (telefoneCliente.equals(p.optString("cliente"))) {
+                encontrou = true;
+
+                card("SERVIÇO: " + p.optString("servico")
+                        + "\n\nPARTIDA: " + p.optString("origem")
+                        + "\nDESTINO: " + p.optString("destino")
+                        + "\n\nVALOR: " + formatar(p.optInt("preco")) + " Kz"
+                        + "\nESTADO: " + p.optString("estado")
+                        + "\nPAGAMENTO: " + p.optString("pagamento_estado")
+                        + "\nMOTORISTA: " + p.optString("motorista", "Por atribuir"));
+            }
         }
+
+        if (!encontrou) {
+            card("Ainda não tem pedidos registados.");
+        }
+
+        botaoSecundario("VOLTAR", this::inicio);
     }
 
-    private void sucessoPedido(String msg) {
-        base("Pedido registado ✓", "O teu pedido foi preparado.");
-
-        LinearLayout c = card();
-
-        TextView t = new TextView(this);
-        t.setText("PEDIDO RECEBIDO");
-        t.setTextColor(VERDE);
-        t.setTextSize(21);
-        t.setTypeface(null, Typeface.BOLD);
-        c.addView(t);
-
-        TextView d = new TextView(this);
-        d.setText("Agora envia os dados para a nossa equipa confirmar o transporte.");
-        d.setTextColor(CINZA);
-        d.setTextSize(14);
-        d.setPadding(0, dp(10), 0, dp(10));
-        c.addView(d);
-
-        botao("ENVIAR PELO WHATSAPP", () -> whatsapp(msg));
-
-        voltar();
-    }
-
-    // ================= MOTORISTA =================
+    // =========================================
+    // CADASTRO MOTORISTA
+    // =========================================
 
     private void cadastroMotorista() {
-        base("Cadastro de motorista", "Junta-te à rede de transportes ÓTIMO.");
+        base();
+
+        topo("CADASTRO DE MOTORISTA", "Registe os seus dados.");
 
         EditText nome = campo("Nome completo");
-        EditText telefone = campo("Número de telefone");
-        EditText matricula = campo("Matrícula da viatura");
+        EditText telefone = campo("Telefone");
+        EditText bi = campo("Número do BI");
+        EditText matricula = campo("Matrícula");
         EditText municipio = campo("Município");
-        EditText extra = campo("Marca e modelo da viatura");
+        EditText marca = campo("Marca / modelo");
 
-        telefone.setInputType(3);
+        texto("Tipo de veículo", 14, VERDE, true);
 
         Spinner tipo = spinner(new String[]{
                 "Carrinha pequena",
@@ -586,329 +448,714 @@ public class MainActivity extends Activity {
                 "Outro"
         });
 
-        botao("ENVIAR CADASTRO  →", () -> {
-            if (nome.getText().toString().trim().isEmpty()
-                    || telefone.getText().toString().trim().isEmpty()
-                    || matricula.getText().toString().trim().isEmpty()) {
-                aviso("Preencha nome, telefone e matrícula.");
+        adicionar(nome);
+        adicionar(telefone);
+        adicionar(bi);
+        adicionar(matricula);
+        adicionar(municipio);
+        adicionar(marca);
+
+        botao("ENVIAR CADASTRO", () -> {
+
+            String n = nome.getText().toString().trim();
+            String t = telefone.getText().toString().trim();
+            String b = bi.getText().toString().trim();
+            String m = matricula.getText().toString().trim();
+            String mun = municipio.getText().toString().trim();
+            String marc = marca.getText().toString().trim();
+
+            if (n.isEmpty() || t.length() < 9 || b.isEmpty()
+                    || m.isEmpty() || mun.isEmpty() || marc.isEmpty()) {
+
+                aviso("Preencha todos os campos, incluindo o BI.");
                 return;
             }
 
             try {
-                JSONObject m = new JSONObject();
+                JSONObject motorista = new JSONObject();
 
-                m.put("id", "M-" + System.currentTimeMillis());
-                m.put("nome", nome.getText().toString());
-                m.put("telefone", telefone.getText().toString());
-                m.put("matricula", matricula.getText().toString());
-                m.put("municipio", municipio.getText().toString());
-                m.put("veiculo", tipo.getSelectedItem().toString());
-                m.put("extra", extra.getText().toString());
-                m.put("estado", "PENDENTE");
-                m.put("disponivel", false);
+                motorista.put("id", System.currentTimeMillis());
+                motorista.put("nome", n);
+                motorista.put("telefone", t);
+                motorista.put("bi", b);
+                motorista.put("matricula", m);
+                motorista.put("municipio", mun);
+                motorista.put("marca", marc);
+                motorista.put("veiculo", tipo.getSelectedItem().toString());
 
-                motoristas.put(m);
+                motorista.put("estado", "PENDENTE");
+                motorista.put("disponivel", false);
+
+                motoristas.put(motorista);
                 salvar();
 
-                base("Cadastro recebido ✓", "Candidatura registada");
-
-                LinearLayout c = card();
-
-                TextView t = new TextView(this);
-                t.setText("EM ANÁLISE");
-                t.setTextColor(VERDE);
-                t.setTextSize(20);
-                t.setTypeface(null, Typeface.BOLD);
-                c.addView(t);
-
-                TextView d = new TextView(this);
-                d.setText("Os teus dados foram guardados. A administração irá analisar o teu cadastro.");
-                d.setTextColor(CINZA);
-                d.setTextSize(14);
-                d.setPadding(0, dp(12), 0, 0);
-                c.addView(d);
-
-                voltar();
+                new AlertDialog.Builder(this)
+                        .setTitle("Cadastro enviado")
+                        .setMessage("O seu cadastro aguarda aprovação da ÓTIMO ANGOLA.")
+                        .setPositiveButton("OK", (d, w) -> boasVindas())
+                        .show();
 
             } catch (Exception e) {
-                aviso("Erro ao guardar cadastro.");
+                aviso("Erro ao registar motorista.");
             }
         });
 
-        voltar();
+        botaoSecundario("VOLTAR", this::boasVindas);
     }
 
-    // ================= ADMIN =================
+    // =========================================
+    // ADMINISTRADOR
+    // =========================================
 
-    private void loginAdmin() {
-        EditText pin = new EditText(this);
-        pin.setHint("PIN de administrador");
+    private void administrador() {
+        EditText pin = campo("PIN");
         pin.setInputType(2);
-        pin.setPadding(dp(15), dp(12), dp(15), dp(12));
 
         new AlertDialog.Builder(this)
                 .setTitle("Área administrativa")
+                .setMessage("Introduza o PIN de acesso.")
                 .setView(pin)
-                .setPositiveButton("Entrar", (d, w) -> {
-                    if (pin.getText().toString().equals(PIN_ADMIN)) {
-                        admin();
+                .setPositiveButton("ENTRAR", (d, w) -> {
+
+                    if (PIN_ADMIN.equals(pin.getText().toString().trim())) {
+                        menuAdmin();
                     } else {
                         aviso("PIN incorreto.");
                     }
                 })
-                .setNegativeButton("Cancelar", null)
+                .setNegativeButton("CANCELAR", null)
                 .show();
     }
 
-    private void admin() {
-        base("Painel administrativo", "CENTRO DE CONTROLO");
+    private void menuAdmin() {
+        base();
 
-        LinearLayout estatisticas = card();
+        topo("PAINEL ADMINISTRATIVO", "Gestão ÓTIMO ANGOLA");
 
-        TextView e1 = new TextView(this);
-        e1.setText("PEDIDOS REGISTADOS");
-        e1.setTextColor(CINZA);
-        e1.setTextSize(12);
-        estatisticas.addView(e1);
+        card("PEDIDOS: " + pedidos.length()
+                + "\nMOTORISTAS: " + motoristas.length());
 
-        TextView e2 = new TextView(this);
-        e2.setText(String.valueOf(pedidos.length()));
-        e2.setTextColor(VERDE);
-        e2.setTextSize(36);
-        e2.setTypeface(null, Typeface.BOLD);
-        estatisticas.addView(e2);
+        botao("GESTÃO DE PEDIDOS", this::listaPedidos);
 
-        TextView e3 = new TextView(this);
-        e3.setText("MOTORISTAS REGISTADOS: " + motoristas.length());
-        e3.setTextColor(BRANCO);
-        e3.setTextSize(14);
-        e3.setPadding(0, dp(8), 0, 0);
-        estatisticas.addView(e3);
+        botao("GESTÃO DE MOTORISTAS", this::listaMotoristas);
 
-        botao("Pedidos (" + pedidos.length() + ")  →", this::listaPedidos);
-        botaoSecundario("Motoristas (" + motoristas.length() + ")", this::listaMotoristas);
-        botaoSecundario("Actualizar dados", this::admin);
+        botao("FINANCEIRO / COMISSÕES", this::financeiro);
 
-        voltar();
+        botaoSecundario("VOLTAR", this::boasVindas);
     }
 
-    // ================= PEDIDOS =================
+    // =========================================
+    // LISTA DE PEDIDOS
+    // =========================================
 
     private void listaPedidos() {
-        base("Pedidos", "GESTÃO DE SOLICITAÇÕES");
+        base();
+
+        topo("GESTÃO DE PEDIDOS", "Todos os pedidos.");
 
         if (pedidos.length() == 0) {
-            texto("Ainda não existem pedidos.");
+            card("Não existem pedidos.");
         }
 
         for (int i = pedidos.length() - 1; i >= 0; i--) {
+            final int indice = i;
+
             JSONObject p = pedidos.optJSONObject(i);
             if (p == null) continue;
 
-            String id = p.optString("id");
-            String estado = p.optString("estado", "PENDENTE");
+            card("CLIENTE: " + p.optString("cliente")
+                    + "\nSERVIÇO: " + p.optString("servico")
+                    + "\nPARTIDA: " + p.optString("origem")
+                    + "\nDESTINO: " + p.optString("destino")
+                    + "\nVEÍCULO: " + p.optString("veiculo")
+                    + "\nVALOR: " + formatar(p.optInt("preco")) + " Kz"
+                    + "\nESTADO: " + p.optString("estado")
+                    + "\nMOTORISTA: " + p.optString("motorista")
+                    + "\nPAGAMENTO: " + p.optString("pagamento_estado"));
 
-            LinearLayout c = card();
-
-            TextView codigo = new TextView(this);
-            codigo.setText(id);
-            codigo.setTextColor(VERDE);
-            codigo.setTextSize(13);
-            codigo.setTypeface(null, Typeface.BOLD);
-            c.addView(codigo);
-
-            TextView info = new TextView(this);
-            info.setText(
-                    "\n" + p.optString("servico")
-                            + "\n\nOrigem: " + p.optString("origem")
-                            + "\nDestino: " + p.optString("destino")
-                            + "\nTelefone: " + p.optString("telefone")
-                            + "\nVeículo: " + p.optString("veiculo")
-                            + "\nDistância: " + p.optInt("km") + " km"
-                            + "\nPreço: " + dinheiro(p.optInt("preco"))
-            );
-            info.setTextColor(BRANCO);
-            info.setTextSize(14);
-            c.addView(info);
-
-            TextView st = new TextView(this);
-            st.setText("\n●  " + estado);
-            st.setTextColor(VERDE);
-            st.setTextSize(13);
-            st.setTypeface(null, Typeface.BOLD);
-            c.addView(st);
-
-            botaoSecundario("Alterar estado", () -> mudarEstadoPedido(id));
-
-            botaoSecundario("Enviar pedido ao WhatsApp", () -> whatsapp(
-                    "PEDIDO " + id
-                            + "\nOrigem: " + p.optString("origem")
-                            + "\nDestino: " + p.optString("destino")
-                            + "\nCliente: " + p.optString("telefone")
-                            + "\nPreço: " + dinheiro(p.optInt("preco"))
-                            + "\nEstado: " + p.optString("estado")
-            ));
+            botao("GERIR PEDIDO", () -> gerirPedido(indice));
         }
 
-        voltar();
+        botaoSecundario("VOLTAR", this::menuAdmin);
     }
 
-    private void mudarEstadoPedido(String id) {
-        String[] estados = {
-                "PENDENTE",
-                "ATRIBUÍDO",
-                "CONCLUÍDO",
-                "CANCELADO"
+    private void gerirPedido(int indice) {
+        JSONObject p = pedidos.optJSONObject(indice);
+
+        if (p == null) return;
+
+        String[] opcoes = {
+                "Atribuir motorista",
+                "Marcar concluído",
+                "Cancelar pedido",
+                "Registar pagamento",
+                "Voltar"
         };
 
         new AlertDialog.Builder(this)
-                .setTitle("Estado do pedido")
-                .setItems(estados, (dialog, escolha) -> {
-                    for (int i = 0; i < pedidos.length(); i++) {
-                        JSONObject p = pedidos.optJSONObject(i);
+                .setTitle("Gestão do pedido")
+                .setItems(opcoes, (d, escolha) -> {
 
-                        if (p != null && p.optString("id").equals(id)) {
-                            safePut(p, "estado", estados[escolha]);
-                        }
-                    }
+                    if (escolha == 0) atribuirMotorista(indice);
+                    else if (escolha == 1) mudarEstadoPedido(indice, "CONCLUÍDO");
+                    else if (escolha == 2) mudarEstadoPedido(indice, "CANCELADO");
+                    else if (escolha == 3) registarPagamento(indice);
+                    else listaPedidos();
+                })
+                .show();
+    }
+
+    // =========================================
+    // ATRIBUIR MOTORISTA
+    // =========================================
+
+    private void atribuirMotorista(int indicePedido) {
+        JSONArray aprovados = new JSONArray();
+
+        for (int i = 0; i < motoristas.length(); i++) {
+            JSONObject m = motoristas.optJSONObject(i);
+
+            if (m != null && "APROVADO".equals(m.optString("estado"))) {
+                aprovados.put(m);
+            }
+        }
+
+        if (aprovados.length() == 0) {
+            aviso("Não existem motoristas aprovados.");
+            return;
+        }
+
+        String[] nomes = new String[aprovados.length()];
+
+        for (int i = 0; i < aprovados.length(); i++) {
+            JSONObject m = aprovados.optJSONObject(i);
+
+            nomes[i] = m.optString("nome")
+                    + " • " + m.optString("veiculo")
+                    + " • " + m.optString("matricula");
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle("Selecionar motorista")
+                .setItems(nomes, (d, escolha) -> {
+
+                    JSONObject m = aprovados.optJSONObject(escolha);
+                    JSONObject p = pedidos.optJSONObject(indicePedido);
+
+                    if (m == null || p == null) return;
+
+                    putJson(p, "motorista", m.optString("nome"));
+                    putJson(p, "motorista_telefone", m.optString("telefone"));
+                    putJson(p, "estado", "ATRIBUÍDO");
 
                     salvar();
+
+                    aviso("Motorista atribuído.");
+
                     listaPedidos();
                 })
                 .show();
     }
 
-    // ================= MOTORISTAS =================
+    private void mudarEstadoPedido(int indice, String estado) {
+        JSONObject p = pedidos.optJSONObject(indice);
 
-    private void listaMotoristas() {
-        base("Motoristas", "GESTÃO DA REDE DE TRANSPORTE");
+        if (p == null) return;
 
-        if (motoristas.length() == 0) {
-            texto("Ainda não existem motoristas.");
-        }
+        putJson(p, "estado", estado);
 
-        for (int i = 0; i < motoristas.length(); i++) {
-            JSONObject m = motoristas.optJSONObject(i);
-            if (m == null) continue;
+        salvar();
 
-            String id = m.optString("id");
+        aviso("Pedido atualizado: " + estado);
 
-            LinearLayout c = card();
-
-            TextView nome = new TextView(this);
-            nome.setText(m.optString("nome"));
-            nome.setTextColor(BRANCO);
-            nome.setTextSize(18);
-            nome.setTypeface(null, Typeface.BOLD);
-            c.addView(nome);
-
-            TextView info = new TextView(this);
-            info.setText(
-                    "\nTelefone: " + m.optString("telefone")
-                            + "\nViatura: " + m.optString("veiculo")
-                            + "\nMatrícula: " + m.optString("matricula")
-                            + "\nMunicípio: " + m.optString("municipio")
-                            + "\nModelo: " + m.optString("extra")
-            );
-            info.setTextColor(CINZA);
-            info.setTextSize(14);
-            c.addView(info);
-
-            TextView estado = new TextView(this);
-            estado.setText(
-                    "\nESTADO: " + m.optString("estado")
-                            + "\nDISPONÍVEL: "
-                            + (m.optBoolean("disponivel") ? "SIM" : "NÃO")
-            );
-            estado.setTextColor(VERDE);
-            estado.setTextSize(13);
-            estado.setTypeface(null, Typeface.BOLD);
-            c.addView(estado);
-
-            botaoSecundario("Gerir motorista", () -> gerirMotorista(id));
-        }
-
-        voltar();
+        listaPedidos();
     }
 
-    private void gerirMotorista(String id) {
-        String[] opcoes = {
-                "APROVAR",
-                "REJEITAR",
-                "ATIVAR/DESATIVAR DISPONIBILIDADE"
-        };
+    // =========================================
+    // FINANCEIRO
+    // =========================================
+
+    private void financeiro() {
+        base();
+
+        topo("FINANCEIRO", "Comissões da plataforma.");
+
+        int totalConcluido = 0;
+        int comissaoConcluida = 0;
+        int repasseConcluido = 0;
+        int pagamentosFeitos = 0;
+        int pagamentosPendentes = 0;
+
+        for (int i = 0; i < pedidos.length(); i++) {
+            JSONObject p = pedidos.optJSONObject(i);
+
+            if (p == null) continue;
+
+            if ("CONCLUÍDO".equals(p.optString("estado"))) {
+                totalConcluido += p.optInt("preco");
+                comissaoConcluida += p.optInt("comissao");
+                repasseConcluido += p.optInt("motorista_valor");
+            }
+
+            if ("PAGO".equals(p.optString("pagamento_estado"))) {
+                pagamentosFeitos += p.optInt("preco");
+            } else if (!"CANCELADO".equals(p.optString("estado"))) {
+                pagamentosPendentes += p.optInt("preco");
+            }
+        }
+
+        card("SERVIÇOS CONCLUÍDOS\n"
+                + formatar(totalConcluido) + " Kz");
+
+        card("COMISSÃO DA ÓTIMO ANGOLA (10%)\n"
+                + formatar(comissaoConcluida) + " Kz");
+
+        card("REPASSE A MOTORISTAS (90%)\n"
+                + formatar(repasseConcluido) + " Kz");
+
+        card("VALORES MARCADOS COMO PAGOS\n"
+                + formatar(pagamentosFeitos) + " Kz");
+
+        card("PAGAMENTOS PENDENTES\n"
+                + formatar(pagamentosPendentes) + " Kz");
+
+        texto("A comissão é contabilizada nos serviços concluídos.",
+                13, CINZA, false);
+
+        botao("REGISTAR PAGAMENTO", this::escolherPedidoPagamento);
+
+        botaoSecundario("VOLTAR", this::menuAdmin);
+    }
+
+    // =========================================
+    // SELEÇÃO DE PEDIDO PARA PAGAMENTO
+    // =========================================
+
+    private void escolherPedidoPagamento() {
+        JSONArray pendentes = new JSONArray();
+
+        for (int i = 0; i < pedidos.length(); i++) {
+            JSONObject p = pedidos.optJSONObject(i);
+
+            if (p != null
+                    && !"CANCELADO".equals(p.optString("estado"))
+                    && !"PAGO".equals(p.optString("pagamento_estado"))) {
+                pendentes.put(p);
+            }
+        }
+
+        if (pendentes.length() == 0) {
+            aviso("Não existem pagamentos pendentes.");
+            return;
+        }
+
+        String[] itens = new String[pendentes.length()];
+
+        for (int i = 0; i < pendentes.length(); i++) {
+            JSONObject p = pendentes.optJSONObject(i);
+
+            itens[i] = p.optString("servico")
+                    + " • " + formatar(p.optInt("preco")) + " Kz"
+                    + " • " + p.optString("cliente");
+        }
 
         new AlertDialog.Builder(this)
-                .setTitle("Gestão do motorista")
-                .setItems(opcoes, (d, escolha) -> {
+                .setTitle("Escolher pedido")
+                .setItems(itens, (d, escolha) -> {
 
-                    for (int i = 0; i < motoristas.length(); i++) {
-                        JSONObject m = motoristas.optJSONObject(i);
+                    JSONObject escolhido = pendentes.optJSONObject(escolha);
+                    if (escolhido == null) return;
 
-                        if (m == null || !m.optString("id").equals(id)) {
-                            continue;
-                        }
+                    long id = escolhido.optLong("id");
+                    int indiceReal = -1;
 
-                        if (escolha == 0) {
-                            safePut(m, "estado", "APROVADO");
-                        }
+                    for (int i = 0; i < pedidos.length(); i++) {
+                        JSONObject p = pedidos.optJSONObject(i);
 
-                        if (escolha == 1) {
-                            safePut(m, "estado", "REJEITADO");
-                            safePut(m, "disponivel", false);
-                        }
-
-                        if (escolha == 2) {
-                            boolean disp = m.optBoolean("disponivel");
-                            safePut(m, "disponivel", !disp);
+                        if (p != null && p.optLong("id") == id) {
+                            indiceReal = i;
+                            break;
                         }
                     }
 
-                    salvar();
-                    listaMotoristas();
+                    if (indiceReal >= 0) {
+                        registarPagamento(indiceReal);
+                    }
                 })
                 .show();
     }
 
-    // ================= ARMAZENAMENTO =================
+    // =========================================
+    // PAGAMENTO
+    // =========================================
 
-    private void salvar() {
-        storage.edit()
-                .putString("pedidos", pedidos.toString())
-                .putString("motoristas", motoristas.toString())
-                .apply();
+    private void registarPagamento(int indice) {
+        JSONObject p = pedidos.optJSONObject(indice);
+
+        if (p == null) return;
+
+        String[] metodos = {
+                "Multicaixa Express",
+                "PayPay",
+                "United Money",
+                "Presencial"
+        };
+
+        new AlertDialog.Builder(this)
+                .setTitle("Método de pagamento")
+                .setItems(metodos, (d, escolha) -> {
+
+                    String metodo = metodos[escolha];
+
+                    new AlertDialog.Builder(this)
+                            .setTitle("Confirmar pagamento")
+                            .setMessage("Método: " + metodo
+                                    + "\nValor: " + formatar(p.optInt("preco")) + " Kz"
+                                    + "\n\nConfirmas que recebeste o pagamento?")
+                            .setPositiveButton("CONFIRMAR", (dialog, which) -> {
+
+                                putJson(p, "pagamento_estado", "PAGO");
+                                putJson(p, "pagamento_metodo", metodo);
+
+                                String tipo = metodo.equals("Presencial")
+                                        ? "Presencial"
+                                        : "Digital";
+
+                                putJson(p, "pagamento_tipo", tipo);
+
+                                salvar();
+
+                                aviso("Pagamento registado.");
+
+                                financeiro();
+                            })
+                            .setNegativeButton("CANCELAR", null)
+                            .show();
+                })
+                .show();
     }
 
-    private void safePut(JSONObject obj, String key, Object value) {
-        try {
-            obj.put(key, value);
-        } catch (Exception e) {
-            e.printStackTrace();
+    // =========================================
+    // MOTORISTAS - ADMIN
+    // =========================================
+
+    private void listaMotoristas() {
+        base();
+
+        topo("GESTÃO DE MOTORISTAS", "Cadastros recebidos.");
+
+        if (motoristas.length() == 0) {
+            card("Não existem motoristas registados.");
         }
+
+        for (int i = 0; i < motoristas.length(); i++) {
+            final int indice = i;
+
+            JSONObject m = motoristas.optJSONObject(i);
+            if (m == null) continue;
+
+            card("NOME: " + m.optString("nome")
+                    + "\nTELEFONE: " + m.optString("telefone")
+                    + "\nBI: " + m.optString("bi")
+                    + "\nVEÍCULO: " + m.optString("veiculo")
+                    + "\nMARCA: " + m.optString("marca")
+                    + "\nMATRÍCULA: " + m.optString("matricula")
+                    + "\nMUNICÍPIO: " + m.optString("municipio")
+                    + "\nESTADO: " + m.optString("estado")
+                    + "\nDISPONIBILIDADE: "
+                    + (m.optBoolean("disponivel") ? "ATIVO" : "INATIVO"));
+
+            botao("GERIR MOTORISTA", () -> gerirMotorista(indice));
+        }
+
+        botaoSecundario("VOLTAR", this::menuAdmin);
     }
 
-    // ================= WHATSAPP =================
+    private void gerirMotorista(int indice) {
+        JSONObject m = motoristas.optJSONObject(indice);
+
+        if (m == null) return;
+
+        String[] opcoes = {
+                "Aprovar motorista",
+                "Rejeitar motorista",
+                "Ativar disponibilidade",
+                "Desativar disponibilidade",
+                "Contactar WhatsApp",
+                "Voltar"
+        };
+
+        new AlertDialog.Builder(this)
+                .setTitle(m.optString("nome"))
+                .setItems(opcoes, (d, escolha) -> {
+
+                    if (escolha == 0) {
+                        putJson(m, "estado", "APROVADO");
+                        putJson(m, "disponivel", true);
+                        salvar();
+                        aviso("Motorista aprovado.");
+                        listaMotoristas();
+
+                    } else if (escolha == 1) {
+                        putJson(m, "estado", "REJEITADO");
+                        putJson(m, "disponivel", false);
+                        salvar();
+                        aviso("Cadastro rejeitado.");
+                        listaMotoristas();
+
+                    } else if (escolha == 2) {
+                        putJson(m, "disponivel", true);
+                        salvar();
+                        aviso("Motorista ativado.");
+                        listaMotoristas();
+
+                    } else if (escolha == 3) {
+                        putJson(m, "disponivel", false);
+                        salvar();
+                        aviso("Motorista desativado.");
+                        listaMotoristas();
+
+                    } else if (escolha == 4) {
+                        whatsapp("Olá " + m.optString("nome")
+                                + ", estamos a contactar pela ÓTIMO ANGOLA.");
+                    } else {
+                        listaMotoristas();
+                    }
+                })
+                .show();
+    }
+
+    // =========================================
+    // WHATSAPP
+    // =========================================
 
     private void whatsapp(String mensagem) {
         try {
             String url = "https://wa.me/" + WHATSAPP
                     + "?text=" + Uri.encode(mensagem);
 
-            Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-            startActivity(i);
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            startActivity(intent);
 
         } catch (Exception e) {
             aviso("Não foi possível abrir o WhatsApp.");
         }
     }
 
-    // ================= AVISOS =================
+    // =========================================
+    // DADOS / PERSISTÊNCIA
+    // =========================================
+
+    private JSONArray carregarArray(String chave) {
+        try {
+            return new JSONArray(prefs.getString(chave, "[]"));
+        } catch (Exception e) {
+            return new JSONArray();
+        }
+    }
+
+    private void salvar() {
+        prefs.edit()
+                .putString("pedidos", pedidos.toString())
+                .putString("motoristas", motoristas.toString())
+                .apply();
+    }
+
+    private void putJson(JSONObject obj, String chave, Object valor) {
+        try {
+            obj.put(chave, valor);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // =========================================
+    // DESIGN
+    // =========================================
+
+    private void base() {
+        scroll = new ScrollView(this);
+        scroll.setFillViewport(true);
+        scroll.setBackgroundColor(FUNDO);
+
+        layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(22, 24, 22, 35);
+        layout.setBackgroundColor(FUNDO);
+
+        scroll.addView(layout);
+
+        setContentView(scroll);
+    }
+
+    private void topo(String titulo, String subtitulo) {
+        texto("ÓTIMO ANGOLA", 15, VERDE, true);
+
+        espacamento(12);
+
+        texto(titulo, 24, BRANCO, true);
+
+        espacamento(5);
+
+        texto(subtitulo, 14, CINZA, false);
+
+        espacamento(20);
+    }
+
+    private void texto(String valor, int tamanho, int cor, boolean bold) {
+        TextView t = new TextView(this);
+
+        t.setText(valor);
+        t.setTextSize(tamanho);
+        t.setTextColor(cor);
+        t.setGravity(Gravity.START);
+        t.setPadding(0, 5, 0, 5);
+
+        if (bold) {
+            t.setTypeface(null, Typeface.BOLD);
+        }
+
+        adicionar(t);
+    }
+
+    private void card(String valor) {
+        TextView t = new TextView(this);
+
+        t.setText(valor);
+        t.setTextColor(BRANCO);
+        t.setTextSize(15);
+        t.setTypeface(null, Typeface.BOLD);
+        t.setPadding(18, 20, 18, 20);
+
+        GradientDrawable bg = new GradientDrawable();
+        bg.setColor(CARD);
+        bg.setCornerRadius(18);
+
+        t.setBackground(bg);
+
+        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(-1, -2);
+        p.setMargins(0, 8, 0, 8);
+
+        layout.addView(t, p);
+    }
+
+    private void botao(String nome, Runnable acao) {
+        Button b = new Button(this);
+
+        b.setText(nome);
+        b.setTextColor(Color.BLACK);
+        b.setTextSize(14);
+        b.setTypeface(null, Typeface.BOLD);
+        b.setAllCaps(false);
+        b.setPadding(12, 15, 12, 15);
+
+        GradientDrawable bg = new GradientDrawable();
+        bg.setColor(VERDE);
+        bg.setCornerRadius(16);
+
+        b.setBackground(bg);
+
+        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(-1, -2);
+        p.setMargins(0, 7, 0, 7);
+
+        layout.addView(b, p);
+
+        b.setOnClickListener(v -> acao.run());
+    }
+
+    private void botaoSecundario(String nome, Runnable acao) {
+        Button b = new Button(this);
+
+        b.setText(nome);
+        b.setTextColor(BRANCO);
+        b.setTextSize(14);
+        b.setAllCaps(false);
+        b.setPadding(12, 15, 12, 15);
+
+        GradientDrawable bg = new GradientDrawable();
+        bg.setColor(CARD);
+        bg.setCornerRadius(16);
+        bg.setStroke(1, Color.rgb(65, 70, 76));
+
+        b.setBackground(bg);
+
+        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(-1, -2);
+        p.setMargins(0, 7, 0, 7);
+
+        layout.addView(b, p);
+
+        b.setOnClickListener(v -> acao.run());
+    }
+
+    private EditText campo(String hint) {
+        EditText e = new EditText(this);
+
+        e.setHint(hint);
+        e.setHintTextColor(CINZA);
+        e.setTextColor(BRANCO);
+        e.setTextSize(15);
+        e.setSingleLine(true);
+        e.setPadding(16, 14, 16, 14);
+
+        GradientDrawable bg = new GradientDrawable();
+        bg.setColor(CARD);
+        bg.setCornerRadius(14);
+        bg.setStroke(1, Color.rgb(55, 60, 66));
+
+        e.setBackground(bg);
+
+        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(-1, -2);
+        p.setMargins(0, 7, 0, 7);
+
+        e.setLayoutParams(p);
+
+        return e;
+    }
+
+    private Spinner spinner(String[] itens) {
+        Spinner s = new Spinner(this);
+
+        ArrayAdapter<String> a = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_spinner_item,
+                itens
+        );
+
+        a.setDropDownViewResource(
+                android.R.layout.simple_spinner_dropdown_item
+        );
+
+        s.setAdapter(a);
+        s.setBackgroundColor(CARD);
+
+        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(-1, -2);
+        p.setMargins(0, 8, 0, 8);
+
+        layout.addView(s, p);
+
+        return s;
+    }
+
+    private void adicionar(View v) {
+        if (v.getParent() != null) return;
+
+        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(-1, -2);
+        p.setMargins(0, 6, 0, 6);
+
+        layout.addView(v, p);
+    }
+
+    private void espacamento(int altura) {
+        View v = new View(this);
+
+        layout.addView(v, new LinearLayout.LayoutParams(1, altura));
+    }
 
     private void aviso(String mensagem) {
-        new AlertDialog.Builder(this)
-                .setTitle("ÓTIMO ANGOLA")
-                .setMessage(mensagem)
-                .setPositiveButton("OK", null)
-                .show();
+        Toast.makeText(this, mensagem, Toast.LENGTH_LONG).show();
+    }
+
+    private String formatar(int valor) {
+        return String.format("%,d", valor).replace(",", ".");
     }
 }
