@@ -2,14 +2,19 @@ package ao.otimoangola.app;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.widget.Toast;
 import android.widget.TextView;
+import android.widget.EditText;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
-    String precoEscolhido = "15.000 Kz";
-    String viagemEscolhida = "MACON - 08:00";
-    String assentoEscolhido = "1";
+    String servico = "Mudanças";
+    String origem = "Morro Bento";
+    String destino = "Talatona";
+    int distanciaKm = 5;
+    String detalhesCarga = "Mudança T2";
+    int BASE = 35000;
+    int POR_KM = 1050;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,41 +24,64 @@ public class MainActivity extends Activity {
 
     void mostrarInicio() {
         setContentView(R.layout.activity_inicio);
-        findViewById(R.id.btnVerHorarios).setOnClickListener(v -> mostrarLista());
+        findViewById(R.id.cardMudancas).setOnClickListener(v -> { servico="Mudanças"; mostrarDetalhes(); });
+        findViewById(R.id.cardMercadorias).setOnClickListener(v -> { servico="Transportes de Mercadorias"; mostrarDetalhes(); });
+        findViewById(R.id.cardExpressas).setOnClickListener(v -> { servico="Entregas Expressas"; mostrarDetalhes(); });
+        findViewById(R.id.btnVerHorarios).setOnClickListener(v -> { servico="Mudanças"; mostrarDetalhes(); });
+        findViewById(R.id.btnCriarConta).setOnClickListener(v -> { servico="Mudanças"; mostrarDetalhes(); });
     }
 
-    void mostrarLista() {
+    void mostrarDetalhes() {
         setContentView(R.layout.activity_lista_viagens);
+        TextView tvServico = findViewById(R.id.txtServicoEscolhido);
+        if(tvServico!=null) tvServico.setText("Serviço: " + servico);
+
         findViewById(R.id.btnVoltarLista).setOnClickListener(v -> mostrarInicio());
-        findViewById(R.id.cardViagem1).setOnClickListener(v -> { viagemEscolhida="MACON - 08:00"; precoEscolhido="15.000 Kz"; mostrarAssentos(); });
-        findViewById(R.id.cardViagem2).setOnClickListener(v -> { viagemEscolhida="ANGO-REAL - 10:30"; precoEscolhido="18.500 Kz"; mostrarAssentos(); });
-        findViewById(R.id.cardViagem3).setOnClickListener(v -> { viagemEscolhida="SGO - 14:00"; precoEscolhido="16.000 Kz"; mostrarAssentos(); });
+        findViewById(R.id.btnCalcular).setOnClickListener(v -> {
+            EditText eOrigem = findViewById(R.id.editOrigem);
+            EditText eDestino = findViewById(R.id.editDestino);
+            EditText eDist = findViewById(R.id.editDistancia);
+            EditText eDet = findViewById(R.id.editDetalhes);
+            if(eOrigem!=null && !eOrigem.getText().toString().isEmpty()) origem = eOrigem.getText().toString();
+            if(eDestino!=null && !eDestino.getText().toString().isEmpty()) destino = eDestino.getText().toString();
+            if(eDet!=null && !eDet.getText().toString().isEmpty()) detalhesCarga = eDet.getText().toString();
+            try{
+                if(eDist!=null && !eDist.getText().toString().isEmpty()) distanciaKm = Integer.parseInt(eDist.getText().toString());
+            }catch(Exception e){ distanciaKm=5; }
+            mostrarEstimativa();
+        });
     }
 
-    void mostrarAssentos() {
-        setContentView(R.layout.activity_assentos);
-        findViewById(R.id.btnVoltarAssentos).setOnClickListener(v -> mostrarLista());
-        findViewById(R.id.assento1).setOnClickListener(v -> { assentoEscolhido="1"; Toast.makeText(this,"Assento 1",Toast.LENGTH_SHORT).show(); });
-        findViewById(R.id.assento2).setOnClickListener(v -> { assentoEscolhido="2"; Toast.makeText(this,"Assento 2",Toast.LENGTH_SHORT).show(); });
-        findViewById(R.id.assento3).setOnClickListener(v -> { assentoEscolhido="3"; Toast.makeText(this,"Assento 3",Toast.LENGTH_SHORT).show(); });
-        findViewById(R.id.assento4).setOnClickListener(v -> { assentoEscolhido="4"; Toast.makeText(this,"Assento 4",Toast.LENGTH_SHORT).show(); });
-        findViewById(R.id.assento6).setOnClickListener(v -> { assentoEscolhido="6"; Toast.makeText(this,"Assento 6",Toast.LENGTH_SHORT).show(); });
-        findViewById(R.id.assento5).setOnClickListener(v -> Toast.makeText(this,"Ocupado!",Toast.LENGTH_SHORT).show());
-        findViewById(R.id.btnConfirmarAssento).setOnClickListener(v -> mostrarConfirmar());
-    }
-
-    void mostrarConfirmar() {
+    void mostrarEstimativa() {
         setContentView(R.layout.activity_reserva);
-        TextView tv = findViewById(R.id.txtDetalheViagem);
-        if(tv!=null) tv.setText(viagemEscolhida + " | Assento " + assentoEscolhido + " | " + precoEscolhido);
-        findViewById(R.id.btnVoltarConfirmar).setOnClickListener(v -> mostrarAssentos());
+        int adicional = distanciaKm * POR_KM;
+        int total = BASE + adicional;
+        int comissao = (int)(total * 0.10);
+        int motorista = total - comissao;
+
+        TextView tvDetalhe = findViewById(R.id.txtDetalheViagem);
+        if(tvDetalhe!=null) tvDetalhe.setText(servico + ": " + origem + " → " + destino + " (" + distanciaKm + "km)\n" + detalhesCarga);
+
+        TextView tvCalc = findViewById(R.id.txtCalculo);
+        if(tvCalc!=null) tvCalc.setText(
+            "Base: " + BASE + " Kz\n" +
+            "Adicional: " + distanciaKm + " x " + POR_KM + " = " + adicional + " Kz\n" +
+            "TOTAL: " + total + " Kz\n\n" +
+            "Comissão ÓTIMO (10%): " + comissao + " Kz\n" +
+            "Motorista (90%): " + motorista + " Kz"
+        );
+
+        findViewById(R.id.btnVoltarConfirmar).setOnClickListener(v -> mostrarDetalhes());
         findViewById(R.id.btnPagar).setOnClickListener(v -> mostrarSucesso());
     }
 
     void mostrarSucesso() {
         setContentView(R.layout.activity_sucesso);
+        TextView tv = findViewById(R.id.txtSucessoTitulo);
+        // se não existir, ignora
         findViewById(R.id.btnVoltarInicio).setOnClickListener(v -> mostrarInicio());
         findViewById(R.id.btnRastrear).setOnClickListener(v -> mostrarRastreio());
+        Toast.makeText(this,"Pedido registado! Motorista elegível será notificado.",Toast.LENGTH_LONG).show();
     }
 
     void mostrarRastreio() {
