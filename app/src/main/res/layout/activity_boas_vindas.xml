@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#D41919"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="32dp">
+    
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="ÓTIMO\nANGOLA"
+        android:textColor="#FFFFFF"
+        android:textSize="48sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:lineSpacingExtra="4dp"/>
+    
+    <View android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"/>
+    
+    <TextView
+        android:id="@+id/btnComecar"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="@drawable/bg_white_rounded"
+        android:text="COMEÇAR"
+        android:textColor="#D41919"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:gravity="center"/>
+</LinearLayout>
