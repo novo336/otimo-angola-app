@@ -1,13 +1,234 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:background="#FFFFFF" android:padding="20dp">
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="ÓTIMO ANGOLA" android:textSize="10sp" android:textColor="#A3FF12"/>
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:text="Olá, João Viegas 👋" android:textSize="20sp" android:textStyle="bold" android:textColor="#000000"/>
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Luanda, Angola" android:textColor="#757575" android:textSize="12sp"/>
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="20dp" android:weightSum="3">
-        <LinearLayout android:id="@+id/cardMudancas" android:layout_width="0dp" android:layout_height="100dp" android:layout_weight="1" android:layout_margin="4dp" android:background="@drawable/bg_red_rounded" android:gravity="center" android:orientation="vertical"><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🚚" android:textSize="28sp"/><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Mudanças" android:textStyle="bold" android:textColor="#FFFFFF" android:textSize="12sp" android:layout_marginTop="6dp"/></LinearLayout>
-        <LinearLayout android:id="@+id/cardMercadorias" android:layout_width="0dp" android:layout_height="100dp" android:layout_weight="1" android:layout_margin="4dp" android:background="@drawable/bg_gray_rounded" android:gravity="center" android:orientation="vertical"><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="📦" android:textSize="28sp"/><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Mercadorias" android:textStyle="bold" android:textSize="11sp" android:layout_marginTop="6dp"/></LinearLayout>
-        <LinearLayout android:id="@+id/cardExpressas" android:layout_width="0dp" android:layout_height="100dp" android:layout_weight="1" android:layout_margin="4dp" android:background="@drawable/bg_gray_rounded" android:gravity="center" android:orientation="vertical"><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="⚡" android:textSize="28sp"/><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Entregas" android:textStyle="bold" android:textSize="11sp" android:layout_marginTop="6dp"/></LinearLayout>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FAFAFA">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Olá, João Viegas"
+                    android:textSize="12sp"
+                    android:textColor="#8E8E93" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="O que vai transportar hoje?"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="#000000" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_white_card"
+                android:text="🔔"
+                android:gravity="center"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/bg_white_card"
+            android:orientation="vertical"
+            android:clipChildren="true">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_map"
+                android:scaleType="centerCrop" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Serviços"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#000000" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:id="@+id/cardMudancas"
+                android:layout_width="0dp"
+                android:layout_height="135dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/bg_white_card"
+                android:elevation="3dp"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <ImageView
+                    android:layout_width="52dp"
+                    android:layout_height="52dp"
+                    android:src="@drawable/ic_boxes" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="Mudanças"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:textColor="#000000" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Casa completa"
+                    android:textSize="11sp"
+                    android:textColor="#8E8E93" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/cardMercadorias"
+                android:layout_width="0dp"
+                android:layout_height="135dp"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_white_card"
+                android:elevation="3dp"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <ImageView
+                    android:layout_width="52dp"
+                    android:layout_height="52dp"
+                    android:src="@drawable/ic_van" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="Mercadorias"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:textColor="#000000" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Carga pesada"
+                    android:textSize="11sp"
+                    android:textColor="#8E8E93" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/cardExpressas"
+            android:layout_width="match_parent"
+            android:layout_height="105dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_white_card"
+            android:elevation="3dp"
+            android:orientation="horizontal"
+            android:padding="16dp"
+            android:gravity="center_vertical">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Entregas Express"
+                    android:textStyle="bold"
+                    android:textSize="15sp"
+                    android:textColor="#000000" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Documentos e pequenos volumes até 2h em Luanda"
+                    android:textSize="12sp"
+                    android:textColor="#8E8E93"
+                    android:maxLines="2" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="A partir de 35.000 Kz →"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="#000000" />
+            </LinearLayout>
+
+            <ImageView
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:layout_marginStart="12dp"
+                android:src="@drawable/ic_boxes" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/btnVerHorarios"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="24dp"
+            android:background="@drawable/bg_lime_rounded"
+            android:text="VER CAMIÕES DISPONÍVEIS"
+            android:gravity="center"
+            android:textStyle="bold"
+            android:textColor="#000000"
+            android:textSize="13sp"
+            android:letterSpacing="0.05" />
+
+        <TextView
+            android:id="@+id/btnMotorista"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_gray_light"
+            android:text="Sou Motorista • Ganhar 90%"
+            android:gravity="center"
+            android:textStyle="bold"
+            android:textColor="#000000"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/txtServicoEscolhido"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text=""
+            android:textColor="#A3FF12"
+            android:textStyle="bold"
+            android:visibility="gone" />
     </LinearLayout>
-    <TextView android:id="@+id/btnVerHorarios" android:layout_width="match_parent" android:layout_height="56dp" android:layout_marginTop="24dp" android:background="@drawable/bg_red_rounded" android:text="Ver Camiões Disponíveis →" android:gravity="center" android:textStyle="bold" android:textColor="#FFFFFF"/>
-    <TextView android:id="@+id/btnMotorista" android:layout_width="match_parent" android:layout_height="50dp" android:layout_marginTop="12dp" android:background="@drawable/bg_white_rounded" android:text="Sou Motorista - Cadastrar" android:gravity="center" android:textStyle="bold"/>
-</LinearLayout>
+</ScrollView>
