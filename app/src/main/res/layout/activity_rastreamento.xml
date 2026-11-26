@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FFFFFF"
+    android:padding="20dp">
+
+    <TextView android:id="@+id/btnVoltar2"
+        android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:text="← Voltar" android:textSize="16sp" android:padding="8dp"/>
+
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Rastreamento" android:textSize="22sp" android:textStyle="bold"/>
+
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="Acompanhe sua viagem em tempo real" android:textColor="#757575"/>
+
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:layout_marginTop="24dp"
+        android:background="@drawable/bg_gray_rounded" android:padding="16dp">
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="● Luanda - Partida 08:00" android:textStyle="bold"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginTop="12dp" android:text="● Benguela - Chegada 14:00" android:textColor="#757575"/>
+    </LinearLayout>
+
+    <TextView android:layout_width="match_parent" android:layout_height="120dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/bg_gray_rounded"
+        android:text="🗺️ MAPA\nMotorista a 120km de Luanda"
+        android:gravity="center" android:textColor="#757575"/>
+</LinearLayout>
