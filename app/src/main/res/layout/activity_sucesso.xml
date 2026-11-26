@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FFFFFF"
+    android:gravity="center"
+    android:padding="24dp">
+
+    <TextView android:layout_width="80dp" android:layout_height="80dp"
+        android:background="@drawable/bg_gray_rounded"
+        android:text="✓" android:textSize="40sp" android:textColor="#2E7D32"
+        android:gravity="center" android:textStyle="bold"/>
+
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="Reserva Confirmada!" android:textSize="24sp" android:textStyle="bold"/>
+
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Receberás o bilhete por SMS" android:textColor="#757575" android:gravity="center"/>
+
+    <View android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"/>
+
+    <TextView android:id="@+id/btnRastrear"
+        android:layout_width="match_parent" android:layout_height="56dp"
+        android:background="@drawable/bg_red_rounded"
+        android:text="RASTREAR VIAGEM" android:textColor="#FFFFFF"
+        android:textStyle="bold" android:gravity="center"/>
+
+    <TextView android:id="@+id/btnVoltarInicio"
+        android:layout_width="match_parent" android:layout_height="56dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/bg_gray_rounded"
+        android:text="VOLTAR AO INÍCIO" android:textStyle="bold" android:gravity="center"/>
+</LinearLayout>
