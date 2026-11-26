@@ -1,40 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent"
-    android:orientation="vertical" android:background="#FFFFFF" android:padding="20dp">
-
-    <TextView android:id="@+id/btnVoltarLista"
-        android:layout_width="wrap_content" android:layout_height="wrap_content"
-        android:text="← Voltar" android:textSize="16sp" android:padding="8dp"/>
-
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-        android:layout_marginTop="16dp" android:text="Informar Serviço" android:textSize="22sp" android:textStyle="bold"/>
-    <TextView android:id="@+id/txtServicoEscolhido"
-        android:layout_width="wrap_content" android:layout_height="wrap_content"
-        android:text="Serviço: Mudanças" android:textColor="#757575"/>
-
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-        android:layout_marginTop="20dp" android:text="Origem" android:textStyle="bold"/>
-    <EditText android:id="@+id/editOrigem" android:layout_width="match_parent" android:layout_height="48dp"
-        android:hint="Ex: Morro Bento, Luanda" android:background="@drawable/bg_gray_rounded" android:padding="12dp" android:layout_marginTop="4dp"/>
-
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-        android:layout_marginTop="12dp" android:text="Destino" android:textStyle="bold"/>
-    <EditText android:id="@+id/editDestino" android:layout_width="match_parent" android:layout_height="48dp"
-        android:hint="Ex: Talatona, Luanda" android:background="@drawable/bg_gray_rounded" android:padding="12dp" android:layout_marginTop="4dp"/>
-
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-        android:layout_marginTop="12dp" android:text="Distância (km)" android:textStyle="bold"/>
-    <EditText android:id="@+id/editDistancia" android:layout_width="match_parent" android:layout_height="48dp"
-        android:hint="Ex: 5" android:inputType="number" android:background="@drawable/bg_gray_rounded" android:padding="12dp" android:layout_marginTop="4dp"/>
-
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-        android:layout_marginTop="12dp" android:text="Detalhes da carga" android:textStyle="bold"/>
-    <EditText android:id="@+id/editDetalhes" android:layout_width="match_parent" android:layout_height="80dp"
-        android:hint="Ex: 1 cama, geladeira, 10 caixas" android:background="@drawable/bg_gray_rounded" android:padding="12dp" android:gravity="top" android:layout_marginTop="4dp"/>
-
-    <TextView android:id="@+id/btnCalcular"
-        android:layout_width="match_parent" android:layout_height="56dp"
-        android:layout_marginTop="20dp" android:text="VER ESTIMATIVA" android:gravity="center"
-        android:background="@drawable/bg_red_rounded" android:textColor="#FFFFFF" android:textStyle="bold" android:backgroundTint="#0D1B0F"/>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:background="#FFFFFF" android:padding="20dp">
+    <TextView android:id="@+id/btnVoltarLista" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="← Voltar" android:padding="8dp" android:textStyle="bold"/>
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:text="Informar Transporte" android:textSize="22sp" android:textStyle="bold"/>
+    <TextView android:id="@+id/txtServicoEscolhido" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Serviço: Mudanças" android:textColor="#FF0000" android:textStyle="bold"/>
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:text="Local de recolha (Origem)" android:textSize="12sp" android:textStyle="bold"/>
+    <EditText android:id="@+id/editOrigem" android:layout_width="match_parent" android:layout_height="50dp" android:layout_marginTop="6dp" android:background="@drawable/bg_white_rounded" android:hint="Ex: Morro Bento, Talatona, Kilamba" android:padding="12dp"/>
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="Destino - Toque no mapa" android:textSize="12sp" android:textStyle="bold"/>
+    <LinearLayout android:id="@+id/btnMapa" android:layout_width="match_parent" android:layout_height="120dp" android:layout_marginTop="6dp" android:background="@drawable/bg_gray_rounded" android:gravity="center"><TextView android:id="@+id/txtDestinoMapa" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🗺️ TOQUE PARA DEFINIR DESTINO NO MAPA" android:textStyle="bold" android:textSize="12sp"/></LinearLayout>
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="Distância (km)" android:textSize="12sp" android:textStyle="bold"/>
+    <EditText android:id="@+id/editDistancia" android:layout_width="match_parent" android:layout_height="50dp" android:layout_marginTop="6dp" android:background="@drawable/bg_white_rounded" android:hint="Ex: 5" android:inputType="number" android:padding="12dp"/>
+    <TextView android:id="@+id/btnCalcular" android:layout_width="match_parent" android:layout_height="56dp" android:layout_marginTop="16dp" android:background="@drawable/bg_red_rounded" android:text="VER ESTIMATIVA P(d)=35.000+1.050xd" android:gravity="center" android:textStyle="bold" android:textColor="#FFFFFF"/>
 </LinearLayout>
