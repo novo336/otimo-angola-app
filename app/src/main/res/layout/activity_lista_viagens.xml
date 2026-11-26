@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FFFFFF"
+    android:padding="20dp">
+
+    <TextView android:id="@+id/btnVoltarLista"
+        android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:text="← Voltar" android:textSize="16sp" android:padding="8dp"/>
+
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Viagens Disponíveis" android:textSize="22sp" android:textStyle="bold"/>
+
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:text="Luanda → Benguela - Hoje" android:textColor="#757575"/>
+
+    <LinearLayout android:id="@+id/cardViagem1"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:layout_marginTop="20dp"
+        android:background="@drawable/bg_gray_rounded" android:padding="16dp">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="🚌 MACON - 08:00" android:textStyle="bold" android:textSize="16sp"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Duração: 6h • Direto" android:textColor="#757575"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="15.000 Kz" android:textColor="#D41919" android:textSize="18sp" android:textStyle="bold"/>
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/cardViagem2"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:layout_marginTop="12dp"
+        android:background="@drawable/bg_gray_rounded" android:padding="16dp">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="🚌 ANGO-REAL - 10:30" android:textStyle="bold" android:textSize="16sp"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Duração: 7h • VIP" android:textColor="#757575"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="18.500 Kz" android:textColor="#D41919" android:textSize="18sp" android:textStyle="bold"/>
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/cardViagem3"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:layout_marginTop="12dp"
+        android:background="@drawable/bg_gray_rounded" android:padding="16dp">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="🚌 SGO - 14:00" android:textStyle="bold" android:textSize="16sp"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Duração: 6h30 • Executivo" android:textColor="#757575"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="16.000 Kz" android:textColor="#D41919" android:textSize="18sp" android:textStyle="bold"/>
+    </LinearLayout>
+</LinearLayout>
