@@ -1,13 +1,181 @@
+
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:background="#FFFFFF" android:padding="20dp">
-    <TextView android:id="@+id/btnVoltarLista" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="← Voltar" android:padding="8dp" android:textStyle="bold"/>
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:text="Informar Transporte" android:textSize="22sp" android:textStyle="bold"/>
-    <TextView android:id="@+id/txtServicoEscolhido" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Serviço: Mudanças" android:textColor="#FF0000" android:textStyle="bold"/>
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:text="Local de recolha (Origem)" android:textSize="12sp" android:textStyle="bold"/>
-    <EditText android:id="@+id/editOrigem" android:layout_width="match_parent" android:layout_height="50dp" android:layout_marginTop="6dp" android:background="@drawable/bg_white_rounded" android:hint="Ex: Morro Bento, Talatona, Kilamba" android:padding="12dp"/>
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="Destino - Toque no mapa" android:textSize="12sp" android:textStyle="bold"/>
-    <LinearLayout android:id="@+id/btnMapa" android:layout_width="match_parent" android:layout_height="120dp" android:layout_marginTop="6dp" android:background="@drawable/bg_gray_rounded" android:gravity="center"><TextView android:id="@+id/txtDestinoMapa" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🗺️ TOQUE PARA DEFINIR DESTINO NO MAPA" android:textStyle="bold" android:textSize="12sp"/></LinearLayout>
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="Distância (km)" android:textSize="12sp" android:textStyle="bold"/>
-    <EditText android:id="@+id/editDistancia" android:layout_width="match_parent" android:layout_height="50dp" android:layout_marginTop="6dp" android:background="@drawable/bg_white_rounded" android:hint="Ex: 5" android:inputType="number" android:padding="12dp"/>
-    <TextView android:id="@+id/btnCalcular" android:layout_width="match_parent" android:layout_height="56dp" android:layout_marginTop="16dp" android:background="@drawable/bg_red_rounded" android:text="VER ESTIMATIVA P(d)=35.000+1.050xd" android:gravity="center" android:textStyle="bold" android:textColor="#FFFFFF"/>
-</LinearLayout>
+
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0D1116"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:id="@+id/btnVoltarLista"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="← Voltar"
+            android:textColor="#CDFF35"
+            android:textSize="16sp"
+            android:padding="10dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:text="SOLICITAR TRANSPORTE"
+            android:textColor="#FFFFFF"
+            android:textSize="23sp"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/txtServicoEscolhido"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Serviço: Mudanças"
+            android:textColor="#CDFF35"
+            android:textStyle="bold"
+            android:layout_marginTop="8dp"/>
+
+        <!-- TELEFONE DO CLIENTE -->
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Número de telefone"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:layout_marginTop="20dp"/>
+
+        <EditText
+            android:id="@+id/editTelefoneCliente"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:hint="Ex: 923000000"
+            android:inputType="phone"
+            android:enabled="true"
+            android:focusable="true"
+            android:padding="12dp"
+            android:textColor="#000000"
+            android:textColorHint="#777777"
+            android:background="@drawable/bg_white_rounded"/>
+
+        <!-- ORIGEM -->
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Local de recolha (Origem)"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"/>
+
+        <EditText
+            android:id="@+id/editOrigem"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:hint="Ex: Nova Vida, Talatona"
+            android:inputType="textCapSentences"
+            android:enabled="true"
+            android:focusable="true"
+            android:padding="12dp"
+            android:textColor="#000000"
+            android:textColorHint="#777777"
+            android:background="@drawable/bg_white_rounded"/>
+
+        <!-- DESTINO -->
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Local de entrega (Destino)"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"/>
+
+        <EditText
+            android:id="@+id/editDestino"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:hint="Ex: Kilamba, Benfica, Viana"
+            android:inputType="textCapSentences"
+            android:enabled="true"
+            android:focusable="true"
+            android:padding="12dp"
+            android:textColor="#000000"
+            android:textColorHint="#777777"
+            android:background="@drawable/bg_white_rounded"/>
+
+        <!-- MAPA -->
+
+        <LinearLayout
+            android:id="@+id/btnMapa"
+            android:layout_width="match_parent"
+            android:layout_height="65dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_gray_rounded"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/txtDestinoMapa"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🗺️ SELECIONAR DESTINO NO MAPA"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"/>
+
+        </LinearLayout>
+
+        <!-- DISTÂNCIA -->
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Distância (quilómetros)"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"/>
+
+        <EditText
+            android:id="@+id/editDistancia"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:hint="Ex: 5"
+            android:inputType="numberDecimal"
+            android:enabled="true"
+            android:focusable="true"
+            android:padding="12dp"
+            android:textColor="#000000"
+            android:textColorHint="#777777"
+            android:background="@drawable/bg_white_rounded"/>
+
+        <!-- ESTIMATIVA -->
+
+        <TextView
+            android:id="@+id/btnCalcular"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="24dp"
+            android:background="@drawable/bg_red_rounded"
+            android:text="CALCULAR PREÇO"
+            android:gravity="center"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="ÓTIMO ANGOLA • Transporte simples e seguro"
+            android:textColor="#AAAAAA"
+            android:gravity="center"
+            android:textSize="12sp"/>
+
+    </LinearLayout>
+
+</ScrollView>
