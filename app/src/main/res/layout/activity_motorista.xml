@@ -1,5 +1,4 @@
 
-<?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -56,10 +55,8 @@
             android:hint="Nome completo"
             android:padding="12dp"
             android:textColor="#000000"
-            android:hintTextColor="#777777"
-            android:inputType="textCapWords"
-            android:enabled="true"
-            android:focusable="true"/>
+            android:textColorHint="#777777"
+            android:inputType="textCapWords"/>
 
         <EditText
             android:id="@+id/editTelefoneMotorista"
@@ -70,10 +67,8 @@
             android:hint="Número de telefone"
             android:padding="12dp"
             android:textColor="#000000"
-            android:hintTextColor="#777777"
-            android:inputType="phone"
-            android:enabled="true"
-            android:focusable="true"/>
+            android:textColorHint="#777777"
+            android:inputType="phone"/>
 
         <EditText
             android:id="@+id/editNumeroBI"
@@ -84,10 +79,8 @@
             android:hint="Número do Bilhete de Identidade"
             android:padding="12dp"
             android:textColor="#000000"
-            android:hintTextColor="#777777"
-            android:inputType="textCapCharacters"
-            android:enabled="true"
-            android:focusable="true"/>
+            android:textColorHint="#777777"
+            android:inputType="textCapCharacters"/>
 
         <TextView
             android:layout_width="wrap_content"
@@ -106,10 +99,8 @@
             android:hint="Matrícula da viatura"
             android:padding="12dp"
             android:textColor="#000000"
-            android:hintTextColor="#777777"
-            android:inputType="textCapCharacters"
-            android:enabled="true"
-            android:focusable="true"/>
+            android:textColorHint="#777777"
+            android:inputType="textCapCharacters"/>
 
         <EditText
             android:id="@+id/editTipoViatura"
@@ -117,13 +108,11 @@
             android:layout_height="52dp"
             android:layout_marginTop="10dp"
             android:background="@drawable/bg_white_rounded"
-            android:hint="Tipo: Carrinha 2T, Camião 5T ou Outro"
+            android:hint="Carrinha 2T, Camião 5T ou Outro"
             android:padding="12dp"
             android:textColor="#000000"
-            android:hintTextColor="#777777"
-            android:inputType="textCapWords"
-            android:enabled="true"
-            android:focusable="true"/>
+            android:textColorHint="#777777"
+            android:inputType="textCapWords"/>
 
         <TextView
             android:layout_width="match_parent"
