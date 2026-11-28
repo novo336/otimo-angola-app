@@ -15,6 +15,12 @@ public class MainActivity extends Activity {
     String destino = "";
     String telefoneCliente = "";
 
+    String nomeMotorista = "";
+    String telefoneMotorista = "";
+    String numeroBI = "";
+    String matricula = "";
+    String tipoViatura = "";
+
     int d = 0;
 
     final int PRECO_MINIMO = 35000;
@@ -75,6 +81,8 @@ public class MainActivity extends Activity {
     void form() {
         setContentView(R.layout.activity_lista_viagens);
 
+        destino = "";
+
         TextView t = findViewById(id("txtServicoEscolhido"));
 
         if (t != null) {
@@ -96,7 +104,7 @@ public class MainActivity extends Activity {
         on("btnCalcular", this::ler);
     }
 
-    // LER OS DADOS INTRODUZIDOS PELO CLIENTE
+    // LER DADOS DO CLIENTE
     void ler() {
 
         EditText et = findViewById(id("editTelefoneCliente"));
@@ -107,24 +115,16 @@ public class MainActivity extends Activity {
         if (et == null || eo == null ||
                 edest == null || ed == null) {
 
-            Toast.makeText(
-                    this,
-                    "Erro ao carregar os campos do formulário.",
-                    Toast.LENGTH_LONG
-            ).show();
-
+            Toast.makeText(this,
+                    "Erro ao carregar os campos.",
+                    Toast.LENGTH_LONG).show();
             return;
         }
 
         telefoneCliente = et.getText().toString().trim();
         origem = eo.getText().toString().trim();
 
-        String destinoDigitado =
-                edest.getText().toString().trim();
-
-        if (!destinoDigitado.isEmpty()) {
-            destino = destinoDigitado;
-        }
+        destino = edest.getText().toString().trim();
 
         String distanciaTexto =
                 ed.getText().toString().trim();
@@ -136,7 +136,7 @@ public class MainActivity extends Activity {
         }
 
         if (origem.isEmpty()) {
-            eo.setError("Introduza o local de recolha");
+            eo.setError("Introduza a origem");
             eo.requestFocus();
             return;
         }
@@ -148,7 +148,7 @@ public class MainActivity extends Activity {
         }
 
         if (distanciaTexto.isEmpty()) {
-            ed.setError("Introduza a distância em km");
+            ed.setError("Introduza a distância");
             ed.requestFocus();
             return;
         }
@@ -159,7 +159,7 @@ public class MainActivity extends Activity {
             );
 
             if (distancia <= 0) {
-                ed.setError("A distância deve ser maior que zero");
+                ed.setError("Distância inválida");
                 ed.requestFocus();
                 return;
             }
@@ -167,7 +167,7 @@ public class MainActivity extends Activity {
             d = (int) Math.ceil(distancia);
 
         } catch (Exception e) {
-            ed.setError("Distância inválida");
+            ed.setError("Introduza uma distância válida");
             ed.requestFocus();
             return;
         }
@@ -232,10 +232,70 @@ public class MainActivity extends Activity {
         on("btnVoltarRastreio", this::sucesso);
     }
 
-    // ÁREA DO MOTORISTA
+    // ABRIR CADASTRO DO MOTORISTA
     void motorista() {
         setContentView(R.layout.activity_motorista);
 
         on("btnVoltarMotorista", this::inicio);
+        on("btnEnviarKyc", this::validarMotorista);
+    }
+
+    // VALIDAR CADASTRO DO MOTORISTA
+    void validarMotorista() {
+
+        EditText nome = findViewById(id("editNomeMotorista"));
+        EditText telefone = findViewById(id("editTelefoneMotorista"));
+        EditText bi = findViewById(id("editNumeroBI"));
+        EditText placa = findViewById(id("editMatricula"));
+        EditText viatura = findViewById(id("editTipoViatura"));
+
+        if (nome == null || telefone == null ||
+                bi == null || placa == null || viatura == null) {
+
+            Toast.makeText(this,
+                    "Erro ao carregar o formulário.",
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        nomeMotorista = nome.getText().toString().trim();
+        telefoneMotorista = telefone.getText().toString().trim();
+        numeroBI = bi.getText().toString().trim();
+        matricula = placa.getText().toString().trim();
+        tipoViatura = viatura.getText().toString().trim();
+
+        if (nomeMotorista.isEmpty()) {
+            nome.setError("Introduza o nome completo");
+            nome.requestFocus();
+            return;
+        }
+
+        if (telefoneMotorista.isEmpty()) {
+            telefone.setError("Introduza o telefone");
+            telefone.requestFocus();
+            return;
+        }
+
+        if (numeroBI.isEmpty()) {
+            bi.setError("Introduza o número do BI");
+            bi.requestFocus();
+            return;
+        }
+
+        if (matricula.isEmpty()) {
+            placa.setError("Introduza a matrícula");
+            placa.requestFocus();
+            return;
+        }
+
+        if (tipoViatura.isEmpty()) {
+            viatura.setError("Introduza o tipo de viatura");
+            viatura.requestFocus();
+            return;
+        }
+
+        Toast.makeText(this,
+                "Dados preenchidos com sucesso! Próxima etapa: envio seguro para verificação KYC.",
+                Toast.LENGTH_LONG).show();
     }
 }
