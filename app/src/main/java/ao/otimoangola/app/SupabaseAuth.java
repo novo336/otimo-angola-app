@@ -1,3 +1,4 @@
+
 package ao.otimoangola.app;
 
 import android.content.Context;
@@ -35,6 +36,7 @@ public final class SupabaseAuth {
                 .replace("/rest/v1/", "/auth/v1/");
     }
 
+    // REGISTAR NOVA CONTA
     public static void registar(
             Context context,
             String email,
@@ -51,9 +53,15 @@ public final class SupabaseAuth {
             return;
         }
 
-        executar(context, "signup", dados, callback);
+        executar(
+                context,
+                "signup?redirect_to=ao.otimoangola%3A%2F%2Flogin-callback",
+                dados,
+                callback
+        );
     }
 
+    // INICIAR SESSÃO
     public static void entrar(
             Context context,
             String email,
@@ -170,6 +178,7 @@ public final class SupabaseAuth {
         });
     }
 
+    // EXECUTAR PEDIDOS AO SUPABASE
     private static void executar(
             Context context,
             String endpoint,
@@ -281,6 +290,7 @@ public final class SupabaseAuth {
         });
     }
 
+    // CRIAR MENSAGEM DE ERRO
     private static JSONObject erro(String mensagem) {
 
         JSONObject objeto = new JSONObject();
@@ -297,6 +307,7 @@ public final class SupabaseAuth {
         return objeto;
     }
 
+    // DEVOLVER RESULTADO À INTERFACE
     private static void entregar(
             Callback callback,
             boolean sucesso,
