@@ -1,4 +1,3 @@
-
 package ao.otimoangola.app;
 
 import android.content.Context;
@@ -79,6 +78,98 @@ public final class SupabaseAuth {
         );
     }
 
+    // VALIDAR SESSÃO RECEBIDA DO LINK DE CONFIRMAÇÃO
+    public static void validarSessao(
+            Context context,
+            String accessToken,
+            String refreshToken,
+            Callback callback) {
+
+        Context appContext = context.getApplicationContext();
+
+        EXECUTOR.execute(() -> {
+
+            HttpURLConnection conexao = null;
+
+            try {
+                URL url = new URL(authUrl() + "user");
+                conexao = (HttpURLConnection) url.openConnection();
+
+                conexao.setRequestMethod("GET");
+                conexao.setConnectTimeout(15000);
+                conexao.setReadTimeout(15000);
+
+                conexao.setRequestProperty(
+                        "apikey",
+                        SupabaseConfig.SUPABASE_KEY
+                );
+
+                conexao.setRequestProperty(
+                        "Authorization",
+                        "Bearer " + accessToken
+                );
+
+                conexao.setRequestProperty(
+                        "Accept",
+                        "application/json"
+                );
+
+                int codigo = conexao.getResponseCode();
+
+                InputStream fluxo = codigo >= 200 && codigo < 300
+                        ? conexao.getInputStream()
+                        : conexao.getErrorStream();
+
+                StringBuilder texto = new StringBuilder();
+
+                if (fluxo != null) {
+                    try (BufferedReader leitor =
+                                 new BufferedReader(
+                                         new InputStreamReader(
+                                                 fluxo,
+                                                 StandardCharsets.UTF_8))) {
+
+                        String linha;
+
+                        while ((linha = leitor.readLine()) != null) {
+                            texto.append(linha);
+                        }
+                    }
+                }
+
+                JSONObject resposta = texto.length() > 0
+                        ? new JSONObject(texto.toString())
+                        : new JSONObject();
+
+                boolean sucesso = codigo >= 200 && codigo < 300;
+
+                if (sucesso) {
+
+                    appContext.getSharedPreferences(
+                            "OTIMO_AUTH",
+                            Context.MODE_PRIVATE
+                    ).edit()
+                            .putString("access_token", accessToken)
+                            .putString("refresh_token", refreshToken)
+                            .putString("user_id", resposta.optString("id"))
+                            .apply();
+                }
+
+                entregar(callback, sucesso, resposta);
+
+            } catch (Exception e) {
+
+                entregar(callback, false, erro(e.getMessage()));
+
+            } finally {
+
+                if (conexao != null) {
+                    conexao.disconnect();
+                }
+            }
+        });
+    }
+
     private static void executar(
             Context context,
             String endpoint,
@@ -88,6 +179,7 @@ public final class SupabaseAuth {
         Context appContext = context.getApplicationContext();
 
         EXECUTOR.execute(() -> {
+
             HttpURLConnection conexao = null;
 
             try {
@@ -100,15 +192,18 @@ public final class SupabaseAuth {
                 conexao.setDoOutput(true);
 
                 conexao.setRequestProperty(
-                        "apikey", SupabaseConfig.SUPABASE_KEY
+                        "apikey",
+                        SupabaseConfig.SUPABASE_KEY
                 );
 
                 conexao.setRequestProperty(
-                        "Content-Type", "application/json"
+                        "Content-Type",
+                        "application/json"
                 );
 
                 conexao.setRequestProperty(
-                        "Accept", "application/json"
+                        "Accept",
+                        "application/json"
                 );
 
                 byte[] corpo = dados.toString()
@@ -132,21 +227,29 @@ public final class SupabaseAuth {
                                          new InputStreamReader(
                                                  fluxo,
                                                  StandardCharsets.UTF_8))) {
+
                         String linha;
+
                         while ((linha = leitor.readLine()) != null) {
                             texto.append(linha);
                         }
                     }
                 }
 
-                JSONObject resposta =
-                        texto.length() > 0
-                                ? new JSONObject(texto.toString())
-                                : new JSONObject();
+                JSONObject resposta = texto.length() > 0
+                        ? new JSONObject(texto.toString())
+                        : new JSONObject();
 
                 boolean sucesso = codigo >= 200 && codigo < 300;
 
                 if (sucesso && resposta.has("access_token")) {
+
+                    JSONObject usuario = resposta.optJSONObject("user");
+
+                    String userId = usuario != null
+                            ? usuario.optString("id")
+                            : "";
+
                     appContext.getSharedPreferences(
                             "OTIMO_AUTH",
                             Context.MODE_PRIVATE
@@ -159,20 +262,18 @@ public final class SupabaseAuth {
                                     "refresh_token",
                                     resposta.optString("refresh_token")
                             )
-                            .putString(
-                                    "user_id",
-                                    resposta.optJSONObject("user")
-                                            .optString("id")
-                            )
+                            .putString("user_id", userId)
                             .apply();
                 }
 
                 entregar(callback, sucesso, resposta);
 
             } catch (Exception e) {
+
                 entregar(callback, false, erro(e.getMessage()));
 
             } finally {
+
                 if (conexao != null) {
                     conexao.disconnect();
                 }
@@ -181,11 +282,16 @@ public final class SupabaseAuth {
     }
 
     private static JSONObject erro(String mensagem) {
+
         JSONObject objeto = new JSONObject();
 
         try {
-            objeto.put("message",
-                    mensagem == null ? "Erro desconhecido" : mensagem);
+            objeto.put(
+                    "message",
+                    mensagem == null
+                            ? "Erro desconhecido"
+                            : mensagem
+            );
         } catch (Exception ignored) {}
 
         return objeto;
