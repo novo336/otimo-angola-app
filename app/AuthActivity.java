@@ -1,4 +1,3 @@
-
 package ao.otimoangola.app;
 
 import android.app.Activity;
