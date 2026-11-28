@@ -1,26 +1,39 @@
+
 package ao.otimoangola.app;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.content.Intent;
+import android.net.Uri;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.view.Gravity;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.ScrollView;
-import android.widget.TextView;
+import android.widget.*;
+
+import org.json.JSONObject;
 
 public class AuthActivity extends Activity {
 
     private EditText email, senha;
     private TextView mensagem;
     private LinearLayout layout;
+    private boolean verificandoLink = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         construirTela();
+
+        // Verificar se o Android abriu esta tela através de um link
+        tratarLink(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        tratarLink(intent);
     }
 
     private void construirTela() {
@@ -32,7 +45,6 @@ public class AuthActivity extends Activity {
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.setPadding(35, 70, 35, 35);
         layout.setGravity(Gravity.CENTER_HORIZONTAL);
-
         scroll.addView(layout);
 
         TextView logo = new TextView(this);
@@ -86,6 +98,80 @@ public class AuthActivity extends Activity {
         setContentView(scroll);
     }
 
+    private void tratarLink(Intent intent) {
+
+        if (intent == null || intent.getData() == null) {
+            return;
+        }
+
+        Uri uri = intent.getData();
+
+        if (!"ao.otimoangola".equals(uri.getScheme())
+                || !"login-callback".equals(uri.getHost())) {
+            return;
+        }
+
+        String fragmento = uri.getFragment();
+
+        if (fragmento == null || fragmento.isEmpty()) {
+            mensagem.setText("Link recebido, mas sem tokens de sessão.");
+            return;
+        }
+
+        // Os tokens do Supabase chegam normalmente no fragmento (#)
+        Uri dados = Uri.parse("https://callback.otimo/?" + fragmento);
+
+        String accessToken = dados.getQueryParameter("access_token");
+        String refreshToken = dados.getQueryParameter("refresh_token");
+        String tipo = dados.getQueryParameter("type");
+
+        if (accessToken == null || accessToken.isEmpty()) {
+            mensagem.setText("O link não contém token de acesso.");
+            return;
+        }
+
+        if (verificandoLink) {
+            return;
+        }
+
+        verificandoLink = true;
+        mensagem.setText("A validar confirmação do e-mail...");
+
+        SupabaseAuth.validarSessao(
+                this,
+                accessToken,
+                refreshToken == null ? "" : refreshToken,
+                (sucesso, resposta) -> {
+
+                    verificandoLink = false;
+
+                    if (sucesso) {
+                        mensagem.setText("E-mail confirmado! A abrir ÓTIMO ANGOLA...");
+                        abrirAplicativo();
+                    } else {
+                        mensagem.setText(
+                                resposta.optString(
+                                        "message",
+                                        "Não foi possível validar a sessão."
+                                )
+                        );
+                    }
+                }
+        );
+    }
+
+    private void abrirAplicativo() {
+
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.setFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK
+                        | Intent.FLAG_ACTIVITY_CLEAR_TASK
+        );
+
+        startActivity(intent);
+        finish();
+    }
+
     private void campo(EditText campo) {
 
         LinearLayout.LayoutParams params =
@@ -127,9 +213,7 @@ public class AuthActivity extends Activity {
         String p = senha.getText().toString();
 
         if (e.isEmpty() || p.isEmpty()) {
-            mensagem.setText(
-                    "Preencha o e-mail e a palavra-passe."
-            );
+            mensagem.setText("Preencha o e-mail e a palavra-passe.");
             return;
         }
 
@@ -138,16 +222,7 @@ public class AuthActivity extends Activity {
         SupabaseAuth.entrar(this, e, p, (sucesso, resposta) -> {
 
             if (sucesso) {
-                mensagem.setText("Sessão iniciada!");
-
-                startActivity(
-                        new android.content.Intent(
-                                this, MainActivity.class
-                        )
-                );
-
-                finish();
-
+                abrirAplicativo();
             } else {
                 mensagem.setText(
                         resposta.optString(
@@ -166,8 +241,7 @@ public class AuthActivity extends Activity {
 
         if (e.isEmpty() || p.length() < 8) {
             mensagem.setText(
-                    "Introduza um e-mail e uma palavra-passe " +
-                    "com pelo menos 8 caracteres."
+                    "Introduza um e-mail e uma palavra-passe com pelo menos 8 caracteres."
             );
             return;
         }
@@ -179,21 +253,11 @@ public class AuthActivity extends Activity {
             if (sucesso) {
 
                 if (resposta.has("access_token")) {
-
                     mensagem.setText("Conta criada com sucesso!");
-
-                    startActivity(
-                            new android.content.Intent(
-                                    this, MainActivity.class
-                            )
-                    );
-
-                    finish();
-
+                    abrirAplicativo();
                 } else {
                     mensagem.setText(
-                            "Conta criada! Confirme o seu e-mail " +
-                            "antes de iniciar sessão."
+                            "Conta criada! Confirme o seu e-mail antes de iniciar sessão."
                     );
                 }
 
